@@ -1,5 +1,5 @@
 import React from 'react';
-import { Filter, X} from 'lucid-react';
+import { Filter, X} from 'lucide-react';
 
 const FilterPanel = ({ filters, onFilterChange, onReset }) => {
   return (

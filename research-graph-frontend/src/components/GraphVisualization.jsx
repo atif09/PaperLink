@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 import { ZoomIn, ZoomOut, Maximize2, Play, Pause } from 'lucide-react';
 import { calculateNodeSize, truncateText } from '../utils/graphUtils';
 
-const GraphVisualiation = ({graphData, onNodeClick, selectedNodeId}) => {
+const GraphVisualization = ({graphData, onNodeClick, selectedNodeId}) => {
   const svgRef = useRef(null);
   const simulationRef = useRef(null);
   const [isSimulating, setIsSimulating] = useState(true);

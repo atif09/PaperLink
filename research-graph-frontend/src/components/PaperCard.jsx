@@ -1,5 +1,5 @@
 import React from 'react';
-import {BookOpen, Users, Calendar, TrendingUp } from 'lucid-react';
+import {BookOpen, Users, Calendar, TrendingUp } from 'lucide-react';
 import {formatCitationCount, truncateText} from '../utils/graphUtils';
 
 const PaperCard = ({ paper, onClick, isSelected }) => {

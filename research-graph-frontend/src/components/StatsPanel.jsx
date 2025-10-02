@@ -1,5 +1,5 @@
 import React from 'react';
-import {fileText, GitBranch, TrendingUp, Calendar } from 'lucide-react';
+import {FileText, GitBranch, TrendingUp, Calendar } from 'lucide-react';
 
 const StatsPanel = ({ stats }) => {
   if (!stats) return null;

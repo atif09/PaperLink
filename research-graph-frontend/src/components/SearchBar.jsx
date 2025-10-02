@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Search, X} from 'lucid-react';
+import {Search, X} from 'lucide-react';
 import {useDebounce} from '../hooks/useDebounce';
 
 const SearchBar = ({onSearch, isLoading}) => {
