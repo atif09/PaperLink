@@ -85,7 +85,7 @@ class Paper(db.Model):
       edges.append({
         'source': citing_paper.id,
         'target': self.id,
-        'type': 'cities'
+        'type': 'cites'
       })
     for citation in self.references.all():
       cited_paper = citation.cited_paper
@@ -95,7 +95,7 @@ class Paper(db.Model):
       edges.append({
         'source': self.id,
         'target': cited_paper.id,
-        'type': 'cities'
+        'type': 'cites'
       })
     
     return {
