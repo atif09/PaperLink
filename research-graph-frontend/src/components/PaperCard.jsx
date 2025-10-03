@@ -3,13 +3,18 @@ import {BookOpen, Users, Calendar, TrendingUp } from 'lucide-react';
 import {formatCitationCount, truncateText} from '../utils/graphUtils';
 
 const PaperCard = ({ paper, onClick, isSelected }) => {
+  const categoryBadge = paper.categories ? getCategoryBadge(paper.categories) : null;
+
   return (
     <div 
       className={`paper-card ${isSelected ? 'selected' : ''}`}
       onClick={() => onClick(paper)}
     >
       <div className="paper-card-header">
-        <h3 className="paper-title">{truncateText(paper.title, 80)}</h3>
+        <div className="paper-title-row">
+          <h3 className="paper-title">{truncateText(paper.title, 80)}</h3>
+          {categoryBadge && <CategoryBadge category={categoryBadge} />}
+        </div>
       </div>
       
       <div className="paper-metadata">
