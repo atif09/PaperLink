@@ -6,12 +6,16 @@ import GraphVisualization from './components/GraphVisualization';
 import PaperDetails from './components/PaperDetails';
 import FilterPanel from './components/FilterPanel';
 import StatsPanel from './components/StatsPanel';
+import CategoryFilter from './components/CategoryFilter';
+import { categorizePapers, sortPapersByCategory } from './utils/paperCategorization';
 import { searchPapers, getPaperDetails, getCitationGraph } from './services/api';
 import { processGraphData } from './utils/graphUtils';
 import { Network } from 'lucide-react';
 
 
 function App() {
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [categorizedResults, setCategorizedResults] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedPaper, setSelectedPaper] = useState(null);
@@ -33,15 +37,29 @@ function App() {
 
     try{
       const data = await searchPapers(query, filters);
-      setSearchResults(data.results || []);
+      const results = data.results || [];
+      const categorized = categorizePapers(results);
+      setSearchResults(categorized);
+      setCategorizedResults(categorized);
       setView('search');
     } catch (error) {
       console.error('Search failed:', error);
       setSearchResults([]);
+      setCategorizedResults([]);
     } finally {
       setIsSearching(false);
     }
   }, [filters]);
+
+  const handleCategoryChange = (category) => {
+    setActiveCategory(category);
+    if (category === 'all') {
+      setSearchResults(categorizedResults);
+    } else {
+      const sorted = sortPapersByCategory(categorizedResults, category);
+      setSearchResults(sorted);
+    }
+  };
 
   const handlePaperClick = async (paper) => {
     setSelectedPaper(paper);
@@ -142,23 +160,32 @@ function App() {
               />
             </div>
 
-            <div className="search-results">
-              {searchResults.length === 0 && !isSearching && (
-                <div className="empty-state">
-                  <Network size={64} />
-                  <h2>Discover Research Networks</h2>
-                  <p>Search for papers to visualize citation relationships</p>
-                </div>
-              )}
-
-              {searchResults.map(paper => (
-                <PaperCard
-                  key={paper.id}
-                  paper={paper}
-                  onClick={handlePaperClick}
-                  isSelected={selectedPaper?.id === paper.id}
+            <div className="search-results-container">
+              {searchResults.length > 0 && (
+                <CategoryFilter 
+                  activeCategory={activeCategory}
+                  onCategoryChange={handleCategoryChange}
                 />
-              ))}
+              )}
+              
+              <div className="search-results">
+                {searchResults.length === 0 && !isSearching && (
+                  <div className="empty-state">
+                    <Network size={64} />
+                    <h2>Discover Research Networks</h2>
+                    <p>Search for papers to visualize citation relationships</p>
+                  </div>
+                )}
+
+                {searchResults.map(paper => (
+                  <PaperCard
+                    key={paper.id}
+                    paper={paper}
+                    onClick={handlePaperClick}
+                    isSelected={selectedPaper?.id === paper.id}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         )}
