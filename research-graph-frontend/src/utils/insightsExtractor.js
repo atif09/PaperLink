@@ -87,4 +87,4 @@ export const hasInsights = (insights) => {
         insights.problemSolved || 
         insights.keyFindings.length > 0;
   
-}
+};
