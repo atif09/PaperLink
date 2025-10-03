@@ -7,6 +7,8 @@ import PaperDetails from './components/PaperDetails';
 import FilterPanel from './components/FilterPanel';
 import StatsPanel from './components/StatsPanel';
 import CategoryFilter from './components/CategoryFilter';
+import ReadingPath from './components/ReadingPath';
+import { generateReadingPath } from './utils/readingPath';
 import { categorizePapers, sortPaperByCategory } from './utils/paperCategorization';
 import { searchPapers, getPaperDetails, getCitationGraph } from './services/api';
 import { processGraphData } from './utils/graphUtils';
@@ -14,6 +16,7 @@ import { Network } from 'lucide-react';
 
 
 function App() {
+  const [readingPath, setReadingPath] = useState(null);
   const [activeCategory, setActiveCategory] = useState('all');
   const [categorizedResults, setCategorizedResults] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
@@ -72,6 +75,9 @@ function App() {
 
       const processed = processGraphData(graphResponse.graph)
       setGraphData(processed);
+
+      const path = generateReadingPath(paper, processed);
+      setReadingPath(path);
 
       calculateStats(processed);
     } catch (error) {
@@ -191,30 +197,38 @@ function App() {
         )}
 
         {view === 'graph' && (
-          <div className="graph-view">
-            {isLoadingGraph ? (
-              <div className="loading-state">
-                <div className="loader" />
-                <p>Building citation network...</p>
-              </div>
-            ) : graphData ? (
-              <>
-                <StatsPanel stats={stats} />
-                <GraphVisualization
-                  graphData={graphData}
-                  onNodeClick={handleNodeClick}
-                  selectedNodeId={detailsPaper?.id}
+        <div className="graph-view">
+          {isLoadingGraph ? (
+            <div className="loading-state">
+              <div className="loader" />
+              <p>Building citation network...</p>
+            </div>
+          ) : graphData ? (
+            <>
+              <StatsPanel stats={stats} />
+              
+              {readingPath && readingPath.prerequisites.length > 0 && (
+                <ReadingPath 
+                  readingPath={readingPath}
+                  onPaperClick={handleNodeClick}
                 />
-              </>
-            ) : (
-              <div className="empty-state">
-                <Network size={64} />
-                <h2>No Graph Data</h2>
-                <p>Select a paper to visualize its citation network</p>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+              
+              <GraphVisualization
+                graphData={graphData}
+                onNodeClick={handleNodeClick}
+                selectedNodeId={detailsPaper?.id}
+              />
+            </>
+          ) : (
+            <div className="empty-state">
+              <Network size={64} />
+              <h2>No Graph Data</h2>
+              <p>Select a paper to visualize its citation network</p>
+            </div>
+          )}
+        </div>
+      )}
       </main>
 
       {detailsPaper && (
