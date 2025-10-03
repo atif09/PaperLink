@@ -11,7 +11,7 @@ import ReadingPath from './components/ReadingPath';
 import ComplexityFilter from './components/ComplexityFilter';
 import { analyzeComplexity, filterByComplexity } from './utils/complexityAnalysis';
 import { generateReadingPath } from './utils/readingPath';
-import { categorizePapers, sortPaperByCategory } from './utils/paperCategorization';
+import { categorizePapers, sortPapersByCategory } from './utils/paperCategorization';
 import { searchPapers, getPaperDetails, getCitationGraph } from './services/api';
 import { processGraphData } from './utils/graphUtils';
 import { Network } from 'lucide-react';
@@ -55,7 +55,7 @@ function App() {
         Advanced: analyzed.filter(p => p.complexityLevel === 'Advanced').length,
       };
 
-      setComplexityCountrs(counts);
+      setComplexityCounts(counts);
       setSearchResults(analyzed);
       setCategorizedResults(analyzed);
       setView('search');
@@ -70,20 +70,32 @@ function App() {
 
   const handleComplexityChange = (complexity) => {
     setActiveComplexity(complexity);
-    if (complexity === 'all') {
-      if (activeCategory === 'all') {
-        setSearchResults(categorizedResults);
-      } else {
-        const sorted = sortPapersByCategory(categorizedResults, activeCategory);
-        setSearchResults(sorted);
-      }
-    } else {
-      const baseResults = activeCategory === 'all' 
-        ? categorizedResults 
-        : sortPapersByCategory(categorizedResults, activeCategory);
-      const filtered = filterByComplexity(baseResults, complexity);
-      setSearchResults(filtered);
+    let results = categorizedResults;
+    
+    if (activeCategory !== 'all') {
+      results = sortPapersByCategory(results, activeCategory);
     }
+    
+    if (complexity !== 'all') {
+      results = filterByComplexity(results, complexity);
+    }
+    
+    setSearchResults(results);
+  };
+
+  const handleCategoryChange = (category) => {
+    setActiveCategory(category);
+    let results = categorizedResults;
+
+    if (category !== 'all') {
+      results = sortPapersByCategory(results, category);
+    }
+
+    if (activeComplexity !== 'all') {
+      results = filterByComplexity(results, activeComplexity)
+    }
+
+    searchResults(results);
   };
 
   const handlePaperClick = async (paper) => {

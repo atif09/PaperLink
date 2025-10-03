@@ -33,7 +33,7 @@ export const categorizePapers = (papers) => {
   });
 };
 
-export const sortPaperByCategory = (papers, category) => {
+export const sortPapersByCategory = (papers, category) => {
   const categorized = categorizePapers(papers);
 
   switch(category) {

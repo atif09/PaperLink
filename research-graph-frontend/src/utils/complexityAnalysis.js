@@ -16,52 +16,56 @@ export const calculateComplexityScore = (paper) => {
   const abstract = (paper.abstract || '').toLowerCase();
   const title = (paper.title || '').toLowerCase();
   const text = `${abstract} ${title}`;
-
-  const words = text.split(/\s+/);
+  
+  if (text.length < 50) {
+    return 40;
+  }
+  
+  const words = text.split(/\s+/).filter(w => w.length > 0);
   const avgWordLength = words.reduce((sum, word) => sum + word.length, 0) / Math.max(words.length, 1);
-
-  if (avgWordLength > 6) score += 15;
-  else if (avgWordLength > 5) score += 10;
-  else score += 5;
-
+  
+  if (avgWordLength > 6.5) score += 20;
+  else if (avgWordLength > 5.5) score += 15;
+  else score += 10;
+  
   advancedTerms.forEach(term => {
-    if (text.includes(term)) score += 8;
+    const regex = new RegExp(`\\b${term}\\b`, 'gi');
+    const matches = text.match(regex);
+    if (matches) score += matches.length * 8;
   });
-
+  
   intermediateTerms.forEach(term => {
-    if (text.includes(term)) score += 3;
+    const regex = new RegExp(`\\b${term}\\b`, 'gi');
+    const matches = text.match(regex);
+    if (matches) score += matches.length * 4;
   });
-
+  
   const refCount = paper.referenced_works_count || 0;
-  if (refCount > 50) score += 20;
-  else if (refCount > 30) score += 15;
-  else if (refCount > 15) score += 10;
-  else score += 5;
-
-  const abstractLength = (paper.abstract || '').length;
-  if (abstractLength > 1500) score += 10;
-  else if (abstractLength > 1000) score += 7;
-  else if (abstractLength > 500) score += 4;
-
+  if (refCount > 50) score += 25;
+  else if (refCount > 30) score += 18;
+  else if (refCount > 15) score += 12;
+  else if (refCount > 5) score += 8;
+  
+  const citationCount = paper.citation_count || 0;
+  if (citationCount > 10000) score += 10;
+  else if (citationCount > 1000) score += 5;
+  
   return Math.min(score, 100);
 };
 
 export const getComplexityLevel = (score) => {
-  if (score >= 60) {
+  if (score >= 50) {
     return {
       level: 'Advanced',
       color: 'red',
       description: 'Requires strong background in the field'
     };
-
-  } else if (score >= 35) {
+  } else if (score >= 30) {
     return {
       level: 'Intermediate',
       color: 'yellow',
       description: 'Some background knowledge helpful'
-
     };
-
   } else {
     return {
       level: 'Beginner',
