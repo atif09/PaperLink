@@ -3,9 +3,12 @@ import {BookOpen, Users, Calendar, TrendingUp } from 'lucide-react';
 import {formatCitationCount, truncateText} from '../utils/graphUtils';
 import CategoryBadge from './CategoryBadge';
 import { getCategoryBadge } from '../utils/paperCategorization';
+import ComplexityBadge from './ComplexityBadge';
+import { analyzeComplexity } from '../utils/complexityAnalysis';
 
 const PaperCard = ({ paper, onClick, isSelected }) => {
-  const categoryBadge = paper.categories && paper.categories.length > 0 ? getCategoryBadge(paper.categories) : null;
+  const categoryBadge = paper.categories ? getCategoryBadge(paper.categories) : null;
+  const complexity = analyzeComplexity(paper);
 
   return (
     <div 
@@ -15,7 +18,14 @@ const PaperCard = ({ paper, onClick, isSelected }) => {
       <div className="paper-card-header">
         <div className="paper-title-row">
           <h3 className="paper-title">{truncateText(paper.title, 80)}</h3>
-          {categoryBadge && <CategoryBadge category={categoryBadge} />}
+          <div className="paper-badges">
+            {categoryBadge && <CategoryBadge category={categoryBadge} />}
+            <ComplexityBadge complexity={{
+              level: complexity.complexityLevel,
+              color: complexity.complexityColor,
+              description: complexity.complexityDescription
+            }} />
+          </div>
         </div>
       </div>
       
