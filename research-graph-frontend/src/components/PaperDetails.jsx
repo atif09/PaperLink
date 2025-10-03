@@ -1,9 +1,14 @@
 import React from 'react';
+import QuickInsights from './QuickInsights';
+import {extractQuickInsights, hasInsights} from '../utils/insightsExtractor';
 import { X, ExternalLink, Users, Calendar, TrendingUp, BookOpen } from 'lucide-react';
 import {formatCitationCount} from '../utils/graphUtils';
 
 const PaperDetails = ({ paper, onClose }) => {
   if (!paper) return null;
+
+  const insights = extractQuickInsights(paper);
+  const showInsights = hasInsights(insights);
 
   return (
     <div className="paper-details-overlay" onClick={onClose}>
@@ -70,6 +75,12 @@ const PaperDetails = ({ paper, onClose }) => {
           <div className="details-section">
             <h3 className="section-title">Abstract</h3>
             <p className="abstract-text">{paper.abstract}</p>
+          </div>
+        )}
+
+        {showInsights && (
+          <div className="details-section">
+            <QuickInsights insights={insights} />
           </div>
         )}
         
