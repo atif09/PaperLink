@@ -36,7 +36,7 @@ export const categorizePapers = (papers) => {
 export const sortPaperByCategory = (papers, category) => {
   const categorized = categorizePapers(papers);
 
-  switch(cateogry) {
+  switch(category) {
     case 'foundational': 
       return categorized
         .filter(p => p.categories.includes('foundational'))

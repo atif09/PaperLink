@@ -8,21 +8,20 @@ db = SQLAlchemy()
 
 
 def create_app(config_name='development'):
-  
     app = Flask(__name__, instance_relative_config=True)
     
     app.config.from_object(config[config_name])
-
+    
     try:
         os.makedirs(app.instance_path, exist_ok=True)
     except OSError:
         pass
- 
+    
     db.init_app(app)
-  
+    
     CORS(app, resources={
         r"/api/*": {
-            "origins": "*", 
+            "origins": "*",
             "methods": ["GET", "POST", "PUT", "DELETE"],
             "allow_headers": ["Content-Type"]
         }
@@ -34,19 +33,16 @@ def create_app(config_name='development'):
         app.register_blueprint(search_bp, url_prefix='/api/search')
         app.register_blueprint(papers_bp, url_prefix='/api/papers')
     
-
     @app.route('/health')
     def health_check():
-      
         return {
             'status': 'healthy',
             'message': 'Research Graph API is running',
             'version': '1.0.0'
         }, 200
-
+    
     @app.route('/')
     def index():
-
         return {
             'message': 'Research Paper Graph Visualization API',
             'version': '1.0.0',

@@ -7,7 +7,7 @@ import PaperDetails from './components/PaperDetails';
 import FilterPanel from './components/FilterPanel';
 import StatsPanel from './components/StatsPanel';
 import CategoryFilter from './components/CategoryFilter';
-import { categorizePapers, sortPapersByCategory } from './utils/paperCategorization';
+import { categorizePapers, sortPaperByCategory } from './utils/paperCategorization';
 import { searchPapers, getPaperDetails, getCitationGraph } from './services/api';
 import { processGraphData } from './utils/graphUtils';
 import { Network } from 'lucide-react';
@@ -56,7 +56,7 @@ function App() {
     if (category === 'all') {
       setSearchResults(categorizedResults);
     } else {
-      const sorted = sortPapersByCategory(categorizedResults, category);
+      const sorted = sortPaperByCategory(categorizedResults, category);
       setSearchResults(sorted);
     }
   };

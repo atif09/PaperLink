@@ -1,9 +1,11 @@
 import React from 'react';
 import {BookOpen, Users, Calendar, TrendingUp } from 'lucide-react';
 import {formatCitationCount, truncateText} from '../utils/graphUtils';
+import CategoryBadge from './CategoryBadge';
+import { getCategoryBadge } from '../utils/paperCategorization';
 
 const PaperCard = ({ paper, onClick, isSelected }) => {
-  const categoryBadge = paper.categories ? getCategoryBadge(paper.categories) : null;
+  const categoryBadge = paper.categories && paper.categories.length > 0 ? getCategoryBadge(paper.categories) : null;
 
   return (
     <div 

@@ -1,6 +1,6 @@
 import React from 'react';
 
-const categoryBadge = ({ category}) => {
+const CategoryBadge = ({ category}) => {
   const getBadgeStyle = () => {
     switch(category.color) {
       case 'gold':
