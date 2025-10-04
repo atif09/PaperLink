@@ -5,6 +5,7 @@ import CategoryBadge from './CategoryBadge';
 import { getCategoryBadge } from '../utils/paperCategorization';
 import ComplexityBadge from './ComplexityBadge';
 import { analyzeComplexity } from '../utils/complexityAnalysis';
+import SavePaperButton from './SavePaperButton';
 
 const PaperCard = ({ paper, onClick, isSelected }) => {
   const categoryBadge = paper.categories ? getCategoryBadge(paper.categories) : null;
@@ -27,6 +28,7 @@ const PaperCard = ({ paper, onClick, isSelected }) => {
             }} />
           </div>
         </div>
+        <SavePaperButton paper={paper} />
       </div>
       
       <div className="paper-metadata">
