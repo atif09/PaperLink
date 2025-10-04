@@ -52,38 +52,38 @@ def delete_collection(collection_id):
 
 @library_bp.route('/saved-papers', methods=['POST'])
 def save_paper():
-  data = request.get_json()
-  user_id = data.get('user_id', 'anonymous')
-  paper_id = data.get('paper_id')
-  collection_id = data.get('collection_id')
-
-  if not paper_id or not collection_id:
-    return jsonify({'error': 'paper_id and collection_id are required'}), 400
-
-  existing = SavedPaper.query.filter_by(
-    paper_id = paper_id,
-    collection_id=collection_id,
-    user_id=user_id
-  ).first()
-
-  if not existing:
-    return jsonify({'error': 'Paper already saved in this collection'}), 400
-
-  saved_paper = SavedPaper(
-    paper_id=paper_id,
-    collection_id=collection_id,
-    user_id=user_id,
-    notes=data.get('notes', '')
-    status=data.get('status', 'to_read')
-  )
-
-  db.session.add(saved_paper)
-  db.session.commit()
-
-  return jsonify({
-    'success': True,
-    'saved_paper': saved_paper.to_dict()
-  }), 201
+    data = request.get_json()
+    user_id = data.get('user_id', 'anonymous')
+    paper_id = data.get('paper_id')
+    collection_id = data.get('collection_id')
+    
+    if not paper_id or not collection_id:
+        return jsonify({'error': 'paper_id and collection_id are required'}), 400
+    
+    existing = SavedPaper.query.filter_by(
+        paper_id=paper_id,
+        collection_id=collection_id,
+        user_id=user_id
+    ).first()
+    
+    if existing:
+        return jsonify({'error': 'Paper already saved in this collection'}), 400
+    
+    saved_paper = SavedPaper(
+        paper_id=paper_id,
+        collection_id=collection_id,
+        user_id=user_id,
+        notes=data.get('notes', ''),
+        status=data.get('status', 'to_read')
+    )
+    
+    db.session.add(saved_paper)
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'saved_paper': saved_paper.to_dict()
+    }), 201
 
 @library_bp.route('/saved-papers/<int:saved_paper_id>', methods=['PUT'])
 def update_saved_paper(saved_paper_id):
