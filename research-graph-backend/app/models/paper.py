@@ -110,3 +110,53 @@ paper_authors = db.Table('paper_authors',
     db.Column('author_position', db.Integer, nullable=True)  
 )
 
+class Collection(db.Model):
+  __tablename__ = 'collections'
+
+  id = db.Column(db.Integer, primary_key=True)
+  name = db.Column(db.String(200), nullable=False)
+  description = db.Column(db.Text, nullable=True)
+  user_id = db.Column(db.String(100), nullable=False, index=True)
+  created_at = db.Column(db.DateTime, default=datetime.utcnow)
+  updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+  saved_papers = db.relationship('SavedPaper', back_populates='collection', cascade='all, delete-orphan')
+
+
+  def to_dict(self):
+    return {
+      'id': self.id,
+      'name': self.name,
+      'description': self.description,
+      'paper_count': len(self.saved_papers),
+      'created_at': self.created_at.isoformat(),
+      'updated_at': self.updated_at.isoformat()
+    }
+
+class SavedPaper(db.Model):
+
+  __tablename__ = 'saved_papers'
+
+  id = db.Column(db.Integer, primary_key=True)
+  paper_id = db.Column(db.String(50), db.ForeignKey('papers.id'), nullable=False)
+  collection_id = db.Column(db.Integer, db.ForeignKey('collections.id'), nullable=False)
+  collection_id = db.Column(db.Integer, db.ForeignKey('collections.id'), nullable=False)
+  notes = db.Column(db.Text, nullable=True)
+  status = db.Column(db.String(20), default='to_read')
+  saved_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+  paper = db.relationship('Paper')
+  collection = db.relationship('Collection', back_populates='saved_papers')
+
+  def to_dict(self):
+    return {
+      'id': self.id,
+      'paper': self.paper.to_dict(include_authors=True, include_abstract=False),
+      'collection_id': self.collection_id,
+      'notes': self.notes,
+      'status': self.status,
+      'saved_at': self.saved_at.isoformat()
+    }
+  
+
