@@ -3,7 +3,7 @@ import axios from 'axios';
 const API_BASE_URL = 'http://localhost:5000/api/library';
 
 const getUserId = () => {
-  let userId = localStorage,getItem('user_id');
+  let userId = localStorage.getItem('user_id');
   if (!userId) {
     userId = 'user_' + Math.random().toString(36).substr(2, 9);
     localStorage.setItem('user_id', userId);
@@ -59,7 +59,7 @@ export const deleteSavedPaper = async (savedPaperId) => {
   return response.data;
 };
 
-export const getCollectionPapers = async (colletionId) => {
+export const getCollectionPapers = async (collectionId) => {
   const response = await axios.get(`${API_BASE_URL}/collections/${collectionId}/papers`, {
     params: {user_id: getUserId()}
   });

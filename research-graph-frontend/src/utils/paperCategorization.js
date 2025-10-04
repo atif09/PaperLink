@@ -10,12 +10,12 @@ export const categorizePapers = (papers) => {
       categories.push('foundational');
     }
 
-    if (age <= 2 && citations >= 50) {
+    if (age <= 5 && citations >= 20) {
       const citationVelocity = citations / Math.max(age, 1);
-      if (citationVelocity >= 25) {
+      if (citationVelocity >= 10) {
         categories.push('trending');
       }
-    }
+    } 
 
     if (age <= 3) {
       categories.push('recent');

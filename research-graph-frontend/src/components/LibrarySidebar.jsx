@@ -5,7 +5,7 @@ import { getCollections, createCollection, deleteCollection, getCollectionPapers
 const LibrarySidebar = ({ isOpen, onClose, onPaperClick }) => {
   const [collections, setCollections] = useState([]);
   const [selectedCollection, setSelectedCollection] = useState(null);
-  const [collectionPapers, seCollectionPapers] = useState([]);
+  const [collectionPapers, setCollectionPapers] = useState([]);
   const [showNewCollection, setShowNewCollection] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState('');
 

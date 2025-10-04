@@ -135,13 +135,12 @@ class Collection(db.Model):
     }
 
 class SavedPaper(db.Model):
-
   __tablename__ = 'saved_papers'
-
+    
   id = db.Column(db.Integer, primary_key=True)
   paper_id = db.Column(db.String(50), db.ForeignKey('papers.id'), nullable=False)
   collection_id = db.Column(db.Integer, db.ForeignKey('collections.id'), nullable=False)
-  collection_id = db.Column(db.Integer, db.ForeignKey('collections.id'), nullable=False)
+  user_id = db.Column(db.String(100), nullable=False, index=True)
   notes = db.Column(db.Text, nullable=True)
   status = db.Column(db.String(20), default='to_read')
   saved_at = db.Column(db.DateTime, default=datetime.utcnow)

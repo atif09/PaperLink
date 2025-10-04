@@ -61,6 +61,8 @@ function App() {
       setComplexityCounts(counts);
       setSearchResults(analyzed);
       setCategorizedResults(analyzed);
+      setActiveCategory('all');
+      setActiveComplexity('all');
       setView('search');
     } catch (error) {
       console.error('Search failed:', error);
@@ -98,7 +100,7 @@ function App() {
       results = filterByComplexity(results, activeComplexity)
     }
 
-    searchResults(results);
+    setSearchResults(results);
   };
 
   const handlePaperClick = async (paper) => {

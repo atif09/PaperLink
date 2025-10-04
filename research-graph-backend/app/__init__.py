@@ -19,13 +19,7 @@ def create_app(config_name='development'):
     
     db.init_app(app)
     
-    CORS(app, resources={
-        r"/api/*": {
-            "origins": "*",
-            "methods": ["GET", "POST", "PUT", "DELETE"],
-            "allow_headers": ["Content-Type"]
-        }
-    })
+    CORS(app)
     
     with app.app_context():
         from app.routes import search_bp, papers_bp, library_bp
