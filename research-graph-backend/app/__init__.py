@@ -28,10 +28,12 @@ def create_app(config_name='development'):
     })
     
     with app.app_context():
-        from app.routes import search_bp, papers_bp
+        from app.routes import search_bp, papers_bp, library_bp
+        
         
         app.register_blueprint(search_bp, url_prefix='/api/search')
         app.register_blueprint(papers_bp, url_prefix='/api/papers')
+        app.register_blueprint(library_bp, url_prefix='/api/library')
     
     @app.route('/health')
     def health_check():
