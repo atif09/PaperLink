@@ -9,15 +9,18 @@ import StatsPanel from './components/StatsPanel';
 import CategoryFilter from './components/CategoryFilter';
 import ReadingPath from './components/ReadingPath';
 import ComplexityFilter from './components/ComplexityFilter';
+import LibrarySidebar from './components/LibrarySidebar';
+
 import { analyzeComplexity, filterByComplexity } from './utils/complexityAnalysis';
 import { generateReadingPath } from './utils/readingPath';
 import { categorizePapers, sortPapersByCategory } from './utils/paperCategorization';
 import { searchPapers, getPaperDetails, getCitationGraph } from './services/api';
 import { processGraphData } from './utils/graphUtils';
-import { Network } from 'lucide-react';
+import { Network, Library } from 'lucide-react';
 
 
 function App() {
+  const [showLibrary, setShowLibrary] = useState(false);
   const [activeComplexity, setActiveComplexity] = useState('all');
   const [complexityCounts, setComplexityCounts] = useState({});
   const [readingPath, setReadingPath] = useState(null);
@@ -184,6 +187,12 @@ function App() {
             >
               Graph
             </button>
+            <button
+              className="nav-tab library-btn"
+              onClick={() => setShowLibrary(true)}>
+                <Library size={18}/>
+                Library
+            </button>
           </nav>
         </div>
       </header>
@@ -278,6 +287,12 @@ function App() {
           onClose={() => setDetailsPaper(null)}
         />
       )}
+
+      <LibrarySidebar
+        isOpen={showLibrary}
+        onClose={() => setShowLibrary(false)}
+        onPaperClick={handlePaperClick}
+        />
     </div>
   );
 }
