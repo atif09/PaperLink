@@ -175,38 +175,34 @@ class OpenAlexService:
         return referenced_papers
     
     def _cache_paper(self, work_data, include_abstract=False):
+        paper_id = work_data.get('id', '').split('/')[-1]
+        if not paper_id:
+            return None
+  
+        paper = Paper(id=paper_id)
+        paper.title = work_data.get('title', 'Untitled')
+        paper.doi = work_data.get('doi', '').replace('https://doi.org/', '') if work_data.get('doi') else None
+        paper.publication_year = work_data.get('publication_year')
+        paper.publication_date = work_data.get('publication_date')
+        
+        if work_data.get('primary_location'):
+            location = work_data['primary_location']
+            if location.get('source'):
+                paper.venue = location['source'].get('display_name')
+            paper.pdf_url = location.get('pdf_url')
+        
+        paper.citation_count = work_data.get('cited_by_count', 0)
+        paper.referenced_works_count = len(work_data.get('referenced_works', []))
+        paper.openalex_url = work_data.get('id')
+        
+        if include_abstract:
+            inverted_abstract = work_data.get('abstract_inverted_index')
+            if inverted_abstract:
+                paper.abstract = self._reconstruct_abstract(inverted_abstract)
+        
+        paper.last_updated = datetime.utcnow()
+ 
         try:
-            paper_id = work_data.get('id', '').split('/')[-1]
-            if not paper_id:
-                return None
-            
-            paper = Paper.query.get(paper_id)
-            if not paper:
-                paper = Paper(id=paper_id)
-            
-            paper.title = work_data.get('title', 'Untitled')
-            paper.doi = work_data.get('doi', '').replace('https://doi.org/', '') if work_data.get('doi') else None
-            paper.publication_year = work_data.get('publication_year')
-            paper.publication_date = work_data.get('publication_date')
-            
-            if work_data.get('primary_location'):
-                location = work_data['primary_location']
-                if location.get('source'):
-                    paper.venue = location['source'].get('display_name')
-                paper.pdf_url = location.get('pdf_url')
-            
-            paper.citation_count = work_data.get('cited_by_count', 0)
-            paper.referenced_works_count = len(work_data.get('referenced_works', []))
-            
-            paper.openalex_url = work_data.get('id')
-            
-            if include_abstract:
-                inverted_abstract = work_data.get('abstract_inverted_index')
-                if inverted_abstract:
-                    paper.abstract = self._reconstruct_abstract(inverted_abstract)
-            
-            paper.last_updated = datetime.utcnow()
-            
             db.session.add(paper)
             
             for authorship in work_data.get('authorships', []):
@@ -217,12 +213,11 @@ class OpenAlexService:
                         paper.authors.append(author)
             
             db.session.commit()
-            return paper
-            
         except Exception as e:
             db.session.rollback()
-            print(f"Error caching paper: {e}")
-            return None
+            print(f"Error caching paper (continuing without cache): {e}")
+
+        return paper
     
     def _cache_author(self, author_data, authorship_data=None):
         try:
