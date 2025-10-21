@@ -61,37 +61,36 @@ def get_paper_citations(paper_id):
 
 @papers_bp.route('/<paper_id>/graph', methods=['GET'])
 def get_citation_graph(paper_id):
-
   try:
     depth = int(request.args.get('depth', 1))
+
     if depth < 1:
       depth = 1
     if depth > 3:
       depth = 3
+  
   except ValueError:
     depth = 1
-  
-  try:
 
-    paper = Paper.query.get(paper_id)
+  try:
+    service = OpenAlexService()
+    paper = service.get_paper_details(paper_id)
 
     if not paper:
-
-      service = OpenAlexService()
-      paper = service.get_paper_details(paper_id)
-
-      if not paper:
-        return jsonify({
-          'error': 'Paper not found',
-          'paper_id': paper_id
-        }), 404
+      return jsonify({
+        'error': 'Paper not found',
+        'paper_id': paper_id
+      }), 404
     
-    if depth == 1:
+    citation_data = service.get_paper_citations(paper_id, fetch_cited_papers=True)
 
-      graph_data = paper.get_citation_graph()
+    if not citation_data:
+      return jsonify({
+        'error': 'Failed to fetch citations',
+        'paper_id': paper_id
+      }), 500
     
-    else:
-      graph_data = Citation.get_citation_network(paper_id, max_depth=depth)
+    graph_data = citation_data.get('citation_graph')
 
     return jsonify({
       'success': True,
@@ -100,7 +99,7 @@ def get_citation_graph(paper_id):
 
   except Exception as e:
     return jsonify({
-      'error': 'Failed to build citation graph',
+      'error': 'Failed to fetch citation graph',
       'message': str(e)
     }), 500
 
