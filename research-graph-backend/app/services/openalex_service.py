@@ -139,7 +139,7 @@ class OpenAlexService:
             'per_page': limit,
             'sort': 'cited_by_count:desc'
         }
-        
+
         data = self._make_request('/works', params=params)
         if not data:
             return []
@@ -148,12 +148,19 @@ class OpenAlexService:
         for work in data.get('results', []):
             citing_paper = self._cache_paper(work)
             if citing_paper:
-                Citation.create_citation(citing_paper.id, paper_id)
+                try:
+                    Citation.create_citation(citing_paper.id, paper_id)
+                except Exception as e:
+                    print(f'Error creating citation (continuing anyway): {e}')
                 citing_papers.append(citing_paper.to_dict(include_authors=True, include_abstract=False))
-        
-        db.session.commit()
+
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print(f'Error committing citations (continuing anyway): {e}')
         return citing_papers
-    
+
     def _fetch_referenced_papers(self, paper_id, limit=50):
         params = {
             'filter': f'cited_by:{paper_id}',
