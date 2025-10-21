@@ -113,75 +113,54 @@ class OpenAlexService:
         paper = self.get_paper_details(paper_id)
         if not paper:
             return None
+        
         citing_papers = self._fetch_citing_papers(paper_id)
 
         cited_papers = []
         if fetch_cited_papers:
             cited_papers = self._fetch_referenced_papers(paper_id)
 
-        try:
-            citation_graph = paper.get_citation_graph()
-        except Exception as e:
-            print(f"Error getting citation graph from DB, building manually: {e}")
+        citation_graph = {
+            'nodes': [],
+            'edges': []
+        }
 
-            citation_graph = {
-                'nodes': [],
-                'edges': []
-            }
+        citation_graph['nodes'].append({
+            'id': paper.id,
+            'title': paper.title,
+            'year': paper.publication_year,
+            'citation_count': paper.citation_count,
+            'type': 'main'
+        })
 
+        for citing in citing_papers:
             citation_graph['nodes'].append({
-                'id': paper.id,
-                'title': paper.title,
-                'year': paper.publication_year,
-                'citation_count': paper.citation_count,
-                'type': 'main'
+                'id': citing['id'],
+                'title': citing['title'],
+                'year': citing.get('publication_year'),
+                'citation_count': citing.get('citation_count', 0),
+                'type': 'citing'
+            })
+            citation_graph['edges'].append({
+                'source': citing['id'],
+                'target': paper.id,
+                'type': 'cites'
             })
 
-            for citing in citing_papers:
-                citation_graph['nodes'].append({
-                    'id': citing['id'],
-                    'title': citing['title'],
-                    'year': citing['title'],
-                    'year': citing.get('publication_year'),
-                    'citation_count':citing.get('citation_count', 0),
-                    'type': 'citing'
-                })
-                citation_graph['edges'].append({
-                    'source': citing['id'],
-                    'target': paper.id,
-                    'type': 'cites'
-                })
-
-            for ref in cited_papers:
-                citation_graph['nodes'].append({
-                    'id': citing['id'],
-                    'title': citing['title'],
-                    'year': citing.get('publication_year'),
-                    'citation_count':citing.get('citation_count', 0),
-                    'type': 'citing'
-                })
-                citation_graph['edges'].append({
-                    'source': citing['id'],
-                    'target': paper.id,
-                    'type': 'cites'
-
-                })
-
-            for ref in cited_papers:
-                citation_graph['nodes'].append({
-                    'id': ref['id'],
-                    'title': ref['title'],
-                    'year': ref.get('publication_year'),
-                    'citation_count': ref.get('citation_count', 0),
-                    'type': 'referenced'
-                })
-
-                citation_graph['edges'].append({
-                    'source': paper.id,
-                    'target': ref['id'],
-                    'type': 'cites'
-                })
-            
+        for ref in cited_papers:
+            citation_graph['nodes'].append({
+                'id': ref['id'],
+                'title': ref['title'],
+                'year': ref.get('publication_year'),
+                'citation_count': ref.get('citation_count', 0),
+                'type': 'referenced'
+            })
+            citation_graph['edges'].append({
+                'source': paper.id,
+                'target': ref['id'],
+                'type': 'cites'
+            })
+        
         return {
             'paper': paper.to_dict(include_authors=True, include_abstract=True),
             'cited_by': citing_papers,
