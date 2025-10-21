@@ -97,14 +97,7 @@ class OpenAlexService:
     def get_paper_details(self, paper_id, force_refresh=False):
         if paper_id.startswith('http'):
             paper_id = paper_id.split('/')[-1]
-        
-        if not force_refresh:
-            paper = Paper.query.get(paper_id)
-            if paper:
-                cache_age = datetime.utcnow() - paper.cached_at
-                if cache_age < timedelta(days=30):
-                    return paper
-        
+
         data = self._make_request(f'/works/{paper_id}')
         if not data:
             return None
