@@ -211,17 +211,8 @@ class OpenAlexService:
         for work in data.get('results', []):
             citing_paper = self._cache_paper(work)
             if citing_paper:
-                try:
-                    Citation.create_citation(citing_paper.id, paper_id)
-                except Exception as e:
-                    print(f'Error creating citation (continuing anyway): {e}')
                 citing_papers.append(citing_paper.to_dict(include_authors=True, include_abstract=False))
 
-        try:
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            print(f'Error committing citations (continuing anyway): {e}')
         return citing_papers
 
     def _fetch_referenced_papers(self, paper_id, limit=50):
@@ -234,24 +225,12 @@ class OpenAlexService:
 
         if not data:
             return []
-        
+
         referenced_papers = []
         for work in data.get('results', []):
             cited_paper = self._cache_paper(work)
             if cited_paper:
-
-                try:
-                    Citation.create_citation(paper_id, cited_paper.id)
-                except Exception as e:
-                    print(f'Error creating citation (continuing anyway): {e}')
-
                 referenced_papers.append(cited_paper.to_dict(include_authors=True, include_abstract=False))
-            
-        try:
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            print(f'Error committing citations (continuing anyway): {e}')
         
         return referenced_papers
     
@@ -259,77 +238,52 @@ class OpenAlexService:
         paper_id = work_data.get('id', '').split('/')[-1]
         if not paper_id:
             return None
-  
+        
         paper = Paper(id=paper_id)
         paper.title = work_data.get('title', 'Untitled')
         paper.doi = work_data.get('doi', '').replace('https://doi.org/', '') if work_data.get('doi') else None
         paper.publication_year = work_data.get('publication_year')
         paper.publication_date = work_data.get('publication_date')
-        
+
         if work_data.get('primary_location'):
             location = work_data['primary_location']
             if location.get('source'):
                 paper.venue = location['source'].get('display_name')
             paper.pdf_url = location.get('pdf_url')
-        
+
         paper.citation_count = work_data.get('cited_by_count', 0)
         paper.referenced_works_count = len(work_data.get('referenced_works', []))
         paper.openalex_url = work_data.get('id')
-        
+
         if include_abstract:
             inverted_abstract = work_data.get('abstract_inverted_index')
             if inverted_abstract:
                 paper.abstract = self._reconstruct_abstract(inverted_abstract)
         
         paper.last_updated = datetime.utcnow()
- 
-        try:
-            db.session.add(paper)
-            
-            for authorship in work_data.get('authorships', []):
-                author_data = authorship.get('author')
-                if author_data:
-                    author = self._cache_author(author_data, authorship)
-                    if author and author not in paper.authors.all():
-                        paper.authors.append(author)
-            
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            print(f"Error caching paper (continuing without cache): {e}")
 
         return paper
     
     def _cache_author(self, author_data, authorship_data=None):
-        try:
-            author_id = author_data.get('id', '').split('/')[-1]
-            if not author_id:
-                return None
-            
-            author = Author.query.get(author_id)
-            if not author:
-                author = Author(id=author_id)
-            
-            author.display_name = author_data.get('display_name', 'Unknown Author')
-            author.orcid = author_data.get('orcid', '').replace('https://orcid.org/', '') if author_data.get('orcid') else None
-            author.openalex_url = author_data.get('id')
-            
-            if authorship_data and authorship_data.get('institutions'):
-                institutions = authorship_data['institutions']
-                if institutions:
-                    first_inst = institutions[0]
-                    author.last_known_institution = first_inst.get('display_name')
-                    author.institution_id = first_inst.get('id', '').split('/')[-1]
-            
-            author.last_updated = datetime.utcnow()
-            
-            db.session.add(author)
-            return author
-            
-        except Exception as e:
-            print(f"Error caching author: {e}")
+        author_id = author_data.get('id', '').split('/')[-1]
+        if not author_id:
             return None
-    
+        
+        author = Author(id=author_id)
+        author.display_name = author_data.get('display_name', 'Unknown Author')
+        author.orcid = author_data.get('orcid', '').replace('https://orcid.org/', '') if author_data.get('orcid') else None
+        author_openalex_url = author_data.get('id')
+
+        if authorship_data and authorship_data.get('institutions'):
+            institutions = authorship_data['institutions']
+            if institutions:
+                first_inst = institutions[0]
+                author.last_known_institution = first_inst.get('display_name')
+                author.institution_id = first_inst.get('id', '').split('/')[-1]
+
+        author.last_updated = datetime.utcnow()
+
+        return author
     def _reconstruct_abstract(self, inverted_index):
         if not inverted_index:
             return None
