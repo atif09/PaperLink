@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || `${window.location.origin}/api`;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -9,6 +9,29 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const config = error.config;
+
+    if (
+      !config.__retryCount &&
+      (error.code === 'ECONNABORTED' ||
+        error.message.includes('timeout') ||
+        error.message.includes('Network Error')
+      )
+    ) {
+      config.__retryCount = 1;
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      return api(config);
+    }
+
+    return Promise.reject(error);
+  }
+)
 
 export const searchPapers = async (query,filters = {}) => {
   const params = { q: query, ...filters };

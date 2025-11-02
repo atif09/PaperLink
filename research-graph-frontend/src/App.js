@@ -45,7 +45,7 @@ function App() {
   const handleSearch = useCallback(async (query) => {
     setIsSearching(true);
 
-    try{
+    try {
       const data = await searchPapers(query, filters);
       const results = data.results || [];
       const categorized = categorizePapers(results);
@@ -53,7 +53,7 @@ function App() {
 
       const counts = {
         all: analyzed.length,
-        Beginner: analyzed.filter(p => p.complexityLevel === 'Beginnner').length,
+        Beginner: analyzed.filter(p => p.complexityLevel === 'Beginner').length,
         Intermediate: analyzed.filter(p => p.complexityLevel === 'Intermediate').length,
         Advanced: analyzed.filter(p => p.complexityLevel === 'Advanced').length,
       };
@@ -66,9 +66,41 @@ function App() {
       setView('search');
     } catch (error) {
       console.error('Search failed:', error);
-      setSearchResults([]);
-      setCategorizedResults([]);
+
+      try {
+        console.log('Attempting fallback search with "neural"...');
+        const fallbackData = await searchPapers('neural', { per_page: 10 });
+        const fallbackResults = fallbackData.results || [];
+        
+        if (fallbackResults.length > 0) {
+          const categorized = categorizePapers(fallbackResults);
+          const analyzed = categorized.map(paper => analyzeComplexity(paper));
+
+          const counts = {
+            all: analyzed.length,
+            Beginner: analyzed.filter(p => p.complexityLevel === 'Beginner').length,
+            Intermediate: analyzed.filter(p => p.complexityLevel === 'Intermediate').length,
+            Advanced: analyzed.filter(p => p.complexityLevel === 'Advanced').length,
+          };
+
+          setComplexityCounts(counts);
+          setSearchResults(analyzed);
+          setCategorizedResults(analyzed);
+          setActiveCategory('all');
+          setActiveComplexity('all');
+          console.log('Fallback search successful');
+        } else {
+          // If even fallback fails, show empty
+          setSearchResults([]);
+          setCategorizedResults([]);
+        }
+      } catch (fallbackError) {
+        console.error('Fallback search also failed:', fallbackError);
+        setSearchResults([]);
+        setCategorizedResults([]);
+      }
     } finally {
+      // Always clear loading state
       setIsSearching(false);
     }
   }, [filters]);
@@ -97,7 +129,7 @@ function App() {
     }
 
     if (activeComplexity !== 'all') {
-      results = filterByComplexity(results, activeComplexity)
+      results = filterByComplexity(results, activeComplexity);
     }
 
     setSearchResults(results);
@@ -112,7 +144,7 @@ function App() {
       const details = await getPaperDetails(paper.id);
       const graphResponse = await getCitationGraph(paper.id, 1);
 
-      const processed = processGraphData(graphResponse.graph)
+      const processed = processGraphData(graphResponse.graph);
       setGraphData(processed);
 
       const path = generateReadingPath(paper, processed);
@@ -139,7 +171,6 @@ function App() {
     setFilters(prev => ({
       ...prev,
       [key]: value,
-
     }));
   };
 
