@@ -4,87 +4,91 @@ const metricPatterns = [
   { pattern: /dataset\s*(?:of|with|containing)?\s*(\d+[,\d]*)\s*(?:samples|images|examples|instances)/gi, type: 'data' },
   { pattern: /(\d+\.?\d*)\s*(?:billion|million|thousand)\s*parameters/gi, type: 'model_size' },
   { pattern: /(?:outperform|beat|exceed|surpass).*?by\s*(\d+\.?\d*)\s*%/gi, type: 'improvement' },
-  { pattern: /(?:achieve|达到|reach).*?(\d+\.?\d*)\s*%/gi, type: 'achievement' }
+  { pattern: /(?:achieve|達到|reach).*?(\d+\.?\d*)\s*%/gi, type: 'achievement' }
 ];
 
-const contributionKeywords = [
-  'we propose', 'we present', 'we introduce', 'we develop', 'we show',
-  'this paper', 'our method', 'our approach', 'our model', 'our framework',
-  'novel', 'new', 'first', 'state-of-the-art', 'sota'
-];
+const negationKeywords = ['not', 'no', 'none', 'neither', 'cannot', 'fails', 'unable'];
+const contextualNegations = ['only', 'just', 'merely', 'reduced from', 'decrease'];
 
-const problemKeywords = [
-  'problem', 'challenge', 'issue', 'limitation', 'difficulty',
-  'lack of', 'cannot', 'unable to', 'fails to'
-];
+const isInNegativeContext = (text, metricIndex) => {
+  const windowSize = 30;
+  const start = Math.max(0, metricIndex - windowSize);
+  const end = Math.min(text.length, metricIndex + windowSize);
+  const contextWindow = text.substring(start, end).toLowerCase();
+  
+  return negationKeywords.some(keyword => contextWindow.includes(keyword)) ||
+         contextualNegations.some(keyword => contextWindow.includes(keyword));
+};
+
+const isRelatedToMethod = (text, metricIndex, metric) => {
+  const methodKeywords = ['propose', 'method', 'approach', 'algorithm', 'framework', 'model', 'system', 'technique'];
+  const windowSize = 100;
+  const start = Math.max(0, metricIndex - windowSize);
+  const end = Math.min(text.length, metricIndex + windowSize);
+  const contextWindow = text.substring(start, end).toLowerCase();
+  
+  return methodKeywords.some(keyword => contextWindow.includes(keyword));
+};
+
+const validatePerformanceMetric = (text, metricIndex, metric) => {
+  if (isInNegativeContext(text, metricIndex)) return false;
+  if (!isRelatedToMethod(text, metricIndex, metric)) return false;
+  return true;
+};
 
 export const extractQuickInsights = (paper) => {
   const abstract = paper.abstract || '';
-  const title = paper.title || '';
-  const fullText = `${title} ${abstract}`;
-
-  if (!abstract || abstract.length < 50) {
-    return null;
+  if (!abstract) {
+    return {
+      metrics: [],
+      abstractExcerpt: '',
+      keyFindings: []
+    };
   }
 
-  const insights = {
-    metrics: [],
-    mainContribution: null,
-    problemSolved: null,
-    keyFindings: []
+  const metrics = [];
+  const seen = new Set();
+
+  for (const metricPattern of metricPatterns) {
+    let match;
+    while ((match = metricPattern.pattern.exec(abstract)) !== null) {
+      const fullMatch = match[0];
+      const matchIndex = match.index;
+
+      if (!seen.has(fullMatch) && validatePerformanceMetric(abstract, matchIndex, fullMatch)) {
+        seen.add(fullMatch);
+        metrics.push({
+          fullMatch: fullMatch.trim(),
+          type: metricPattern.type,
+          value: match[1]
+        });
+
+        if (metrics.length >= 3) break;
+      }
+    }
+    if (metrics.length >= 3) break;
+  }
+
+  const abstractExcerpt = abstract.substring(0, 300);
+
+  const sentencePattern = /[^.!?]*[.!?]+(?!\d)/g;
+  const sentences = abstract.match(sentencePattern) || [];
+  const keyFindings = sentences
+    .slice(2, 5)
+    .map(s => s.trim())
+    .filter(s => s.length > 20);
+
+  return {
+    metrics: metrics,
+    abstractExcerpt: abstractExcerpt,
+    keyFindings: keyFindings
   };
-
-  metricPatterns.forEach(({pattern,type}) => {
-    const matches = [...fullText.matchAll(pattern)];
-    matches.forEach(match => {
-      insights.metrics.push({
-        type,
-        value: match[0],
-        fullMatch: match[0]
-      });
-    });
-  });
-
-  const sentences = abstract.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 20);
-
-
-  const contributionSentence = sentences.find(sentence => 
-    contributionKeywords.some(keyword => 
-      sentence.toLowerCase().includes(keyword)
-    )
-  );
-
-  if (contributionSentence) {
-    insights.mainContribution = contributionSentence.substring(0, 150) + (contributionSentence.length > 150 ? '...' : '');
-  }
-
-  const problemSentence = sentences.find(sentence => 
-    problemKeywords.some(keyword => 
-      sentence.toLowerCase().includes(keyword)
-    )
-  );
-
-  if (problemSentence) {
-    insights.problemSolved = problemSentence.substring(0, 150) + (problemSentence.length > 150 ? '...' : '');
-  }
-
-  const resultKeywords = ['results show', 'experiments demonstrate', 'we find', 'findings', 'achieves', 'outperforms'];
-  const findingSentences = sentences.filter(sentence => 
-    resultKeywords.some(keyword => sentence.toLowerCase().includes(keyword))
-  );
-
-  insights.keyFindings = findingSentences.slice(0, 2).map(s =>
-    s.substring(0, 150) + (s.length > 150 ? '...' : '')
-  );
-
-  return insights;
 };
 
 export const hasInsights = (insights) => {
-  if (!insights) return false;
-  return insights.metrics.length > 0 ||
-        insights.mainContribution || 
-        insights.problemSolved || 
-        insights.keyFindings.length > 0;
-  
+  return insights && (
+    (insights.metrics && insights.metrics.length > 0) ||
+    (insights.abstractExcerpt && insights.abstractExcerpt.length > 0) ||
+    (insights.keyFindings && insights.keyFindings.length > 0)
+  );
 };
