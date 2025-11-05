@@ -1,76 +1,66 @@
-const advancedTerms = [
-  'theorem', 'lemma', 'corollary', 'proposition', 'asymptotic', 'stochastic',
-  'hierarchical', 'eigenvalue', 'manifold', 'topology', 'gaussian', 'bayesian',
-  'convex', 'optimization', 'eigendecomposition', 'tensor', 'gradient descent',
-  'regularization', 'backpropagation', 'adversarial', 'variational'
+const advancedVenues = [
+  'NeurIPS', 'ICML', 'ICCV', 'CVPR', 'ECCV', 'IJCAI', 'AAAI',
+  'Nature', 'Science', 'Nature Machine Intelligence', 'IEEE TPAMI',
+  'JMLR', 'ACM Transactions', 'SIAM', 'Annals of Statistics'
 ];
 
-const intermediateTerms = [
-  'analysis', 'framework', 'methodology', 'empirical', 'statistical',
-  'algorithm', 'correlation', 'distribution', 'hypothesis', 'parameter',
-  'evaluation', 'implementation', 'architecture', 'optimization', 'metric'
+const intermediateVenues = [
+  'ICLR', 'IJCNN', 'ESANN', 'Neurocomputing', 'Information Sciences',
+  'IEEE Transactions', 'ACM Computing Surveys', 'Journal of Machine Learning'
 ];
 
-export const calculateComplexityScore = (paper) => {
-  let score = 0;
-  const abstract = (paper.abstract || '').toLowerCase();
-  const title = (paper.title || '').toLowerCase();
-  const text = `${abstract} ${title}`;
+const normalizeVenueName = (venue) => {
+  if (!venue) return '';
+  return venue.toLowerCase().trim();
+};
+
+export const getVenueComplexity = (venue) => {
+  if (!venue) return 'Intermediate';
   
-  if (text.length < 50) {
-    return 40;
+  const venueLower = normalizeVenueName(venue);
+
+  if (advancedVenues.some(v => venueLower.includes(normalizeVenueName(v)))) {
+    return 'Advanced';
   }
   
-  const words = text.split(/\s+/).filter(w => w.length > 0);
-  const avgWordLength = words.reduce((sum, word) => sum + word.length, 0) / Math.max(words.length, 1);
+  if (intermediateVenues.some(v => venueLower.includes(normalizeVenueName(v)))) {
+    return 'Intermediate';
+  }
+
+  if (venueLower.includes('arxiv') || venueLower.includes('preprint') || venueLower === '') {
+    return 'Beginner';
+  }
   
-  if (avgWordLength > 6.5) score += 20;
-  else if (avgWordLength > 5.5) score += 15;
-  else score += 10;
+  return 'Intermediate';
+};
+
+export const calculateComplexityScore = (paper) => {
+  const venue = paper.venue || '';
+  const level = getVenueComplexity(venue);
   
-  advancedTerms.forEach(term => {
-    const regex = new RegExp(`\\b${term}\\b`, 'gi');
-    const matches = text.match(regex);
-    if (matches) score += matches.length * 8;
-  });
-  
-  intermediateTerms.forEach(term => {
-    const regex = new RegExp(`\\b${term}\\b`, 'gi');
-    const matches = text.match(regex);
-    if (matches) score += matches.length * 4;
-  });
-  
-  const refCount = paper.referenced_works_count || 0;
-  if (refCount > 50) score += 25;
-  else if (refCount > 30) score += 18;
-  else if (refCount > 15) score += 12;
-  else if (refCount > 5) score += 8;
-  
-  const citationCount = paper.citation_count || 0;
-  if (citationCount > 10000) score += 10;
-  else if (citationCount > 1000) score += 5;
-  
-  return Math.min(score, 100);
+  if (level === 'Advanced') return 70;
+  if (level === 'Intermediate') return 40;
+  return 20;
 };
 
 export const getComplexityLevel = (score) => {
-  if (score >= 50) {
+  if (score >= 60) {
     return {
       level: 'Advanced',
       color: 'red',
-      description: 'Requires strong background in the field'
+      description: 'Published in top venues (NeurIPS, ICML, Nature, etc.)'
     };
   } else if (score >= 30) {
     return {
       level: 'Intermediate',
       color: 'yellow',
-      description: 'Some background knowledge helpful'
+      description: 'Published in peer-reviewed venues'
     };
   } else {
     return {
       level: 'Beginner',
       color: 'green',
-      description: 'Accessible to newcomers'
+      description: 'Preprint or emerging venue'
     };
   }
 };
