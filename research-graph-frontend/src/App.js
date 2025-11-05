@@ -10,9 +10,11 @@ import CategoryFilter from './components/CategoryFilter';
 import ReadingPath from './components/ReadingPath';
 import ComplexityFilter from './components/ComplexityFilter';
 import LibrarySidebar from './components/LibrarySidebar';
+import CitationNetworkFilter from './components/CitationNetworkFilter';
+import NetworkStats from './components/NetworkStats';
 
 import { analyzeComplexity, filterByComplexity } from './utils/complexityAnalysis';
-import { generateReadingPath } from './utils/readingPath';
+import { generateRelatedPapers } from './utils/readingPath';
 import { categorizePapers, sortPapersByCategory } from './utils/paperCategorization';
 import { searchPapers, getPaperDetails, getCitationGraph } from './services/api';
 import { processGraphData } from './utils/graphUtils';
@@ -37,6 +39,12 @@ function App() {
     year_max: '',
     min_citations: '',
     per_page: 20,
+  });
+
+  // Graph filtering state
+  const [graphFilters, setGraphFilters] = useState({
+    paperType: 'all',
+    minCitations: 0
   });
 
   const [stats, setStats] = useState(null);
@@ -139,6 +147,8 @@ function App() {
     setSelectedPaper(paper);
     setIsLoadingGraph(true);
     setView('graph');
+    // Reset graph filters when loading new paper
+    setGraphFilters({ paperType: 'all', minCitations: 0 });
 
     try {
       const details = await getPaperDetails(paper.id);
@@ -147,8 +157,8 @@ function App() {
       const processed = processGraphData(graphResponse.graph);
       setGraphData(processed);
 
-      const path = generateReadingPath(paper, processed);
-      setReadingPath(path);
+      const relatedPapers = generateRelatedPapers(paper, processed);
+      setReadingPath(relatedPapers);
 
       calculateStats(processed);
     } catch (error) {
@@ -181,6 +191,13 @@ function App() {
       min_citations: '',
       per_page: 20,
     });
+  };
+
+  const handleGraphFilterChange = (key, value) => {
+    setGraphFilters(prev => ({
+      ...prev,
+      [key]: value
+    }));
   };
 
   const calculateStats = (data) => {
@@ -290,17 +307,28 @@ function App() {
             <>
               <StatsPanel stats={stats} />
               
-              {readingPath && readingPath.prerequisites.length > 0 && (
+              {readingPath && (readingPath.foundational?.length > 0 || readingPath.buildingOn?.length > 0) && (
                 <ReadingPath 
                   readingPath={readingPath}
                   onPaperClick={handleNodeClick}
                 />
               )}
               
+              <CitationNetworkFilter 
+                filters={graphFilters}
+                onFilterChange={handleGraphFilterChange}
+              />
+
+              <NetworkStats 
+                graphData={graphData}
+                filters={graphFilters}
+              />
+              
               <GraphVisualization
                 graphData={graphData}
                 onNodeClick={handleNodeClick}
                 selectedNodeId={detailsPaper?.id}
+                filters={graphFilters}
               />
             </>
           ) : (
