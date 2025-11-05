@@ -1,54 +1,37 @@
-export const generateReadingPath = (centerPaper, graphData) => {
+export const generateRelatedPapers = (centerPaper, graphData) => {
   if (!graphData || !graphData.nodes || !graphData.edges) {
-    return { prerequisites: [], path: [] };
+    return { foundational: [], buildingOn: [], totalReferences: 0 };
   }
 
-  const referencedPapers = graphData.edges
+  const foundational = graphData.edges
     .filter(edge => edge.source === centerPaper.id)
     .map(edge => graphData.nodes.find(n => n.id === edge.target))
-    .filter(paper => paper)
+    .filter(paper => paper !== undefined)
+    .sort((a, b) => (b.citation_count || 0) - (a.citation_count || 0))
+    .slice(0, 5);
 
-  const citationDegree = {};
-  graphData.edges.forEach(edge => {
-    citationDegree[edge.target] = (citationDegree[edge.target] || 0) + 1;
-  });
+  const buildingOn = graphData.edges
+    .filter(edge => edge.target === centerPaper.id)
+    .map(edge => graphData.nodes.find(n => n.id === edge.source))
+    .filter(paper => paper !== undefined)
+    .sort((a, b) => (b.citation_count || 0) - (a.citation_count || 0))
+    .slice(0, 5);
 
-  const scoredPapers = referencedPapers.map(paper => {
-    const age = new Date().getFullYear() - (paper.publication_year || new Date().getFullYear());
-    const citationScore = citationDegree[paper.id] || 0;
-    const totalCitations = paper.citation_count || 0;
-
-    const score = (citationScore * 100) + (totalCitations * 0.1) + (age * 2);
-
-    return {
-      ...paper,
-      prerequisiteScore: score,
-      citedByInNetwork: citationScore,
-    };
-  });
-
-  scoredPapers.sort((a, b) => b.prerequisiteScore - a.prerequisiteScore);
-
-  const prerequisites = scoredPapers.slice(0, 3);
-
-  const path = [
-    ...prerequisites,
-    centerPaper
-  ];
+  const totalReferences = graphData.edges.filter(e => e.source === centerPaper.id).length;
 
   return {
-    prerequisites,
-    path,
-    totalReferences: referencedPapers.length
+    foundational,
+    buildingOn,
+    totalReferences
   };
 };
 
 export const generateLearningSequence = (papers) => {
-  const sorted = [...papers].sort((a,b) => {
+  const sorted = [...papers].sort((a, b) => {
     const yearA = a.publication_year || 9999;
     const yearB = b.publication_year || 9999;
 
-    if (Math.abs(yearA - yearB) > 5) {
+    if (yearA !== yearB) {
       return yearA - yearB;
     }
 
