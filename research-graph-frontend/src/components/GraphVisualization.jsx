@@ -1,13 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
-import { ZoomIn, ZoomOut, Maximize2, Play, Pause } from 'lucide-react';
-import { calculateNodeSize, truncateText, getNodeColor } from '../utils/graphUtils';
+import { ZoomIn, ZoomOut, Maximize2, BookOpen, TrendingUp, Share2 } from 'lucide-react';
+import { calculateNodeSize, truncateText, getNodeColor, formatCitationCount } from '../utils/graphUtils';
 
-const GraphVisualization = ({graphData, onNodeClick, selectedNodeId}) => {
+const GraphVisualization = ({ graphData, onNodeClick, selectedNodeId, filters }) => {
   const svgRef = useRef(null);
   const simulationRef = useRef(null);
-  const [isSimulating, setIsSimulating] = useState(true);
-  const [transform, setTransform] = useState({k: 1, x: 0, y: 0});
+  const [transform, setTransform] = useState({ k: 1, x: 0, y: 0 });
   const [hoveredNode, setHoveredNode] = useState(null);
 
   useEffect(() => {
@@ -21,19 +20,18 @@ const GraphVisualization = ({graphData, onNodeClick, selectedNodeId}) => {
 
     const defs = svg.append('defs');
     
-    // Arrow markers
     defs.append('marker')
       .attr('id', 'arrowhead')
       .attr('viewBox', '-0 -5 10 10')
-      .attr('refX', 20)
+      .attr('refX', 22)
       .attr('refY', 0)
       .attr('orient', 'auto')
-      .attr('markerWidth', 6)
-      .attr('markerHeight', 6)
+      .attr('markerWidth', 8)
+      .attr('markerHeight', 8)
       .append('svg:path')
       .attr('d', 'M 0,-5 L 10,0 L 0,5')
-      .attr('fill', '#606060')
-      .attr('opacity', 0.5);
+      .attr('fill', '#9ca3af')
+      .attr('opacity', 0.6);
 
     const g = svg.append('g');
 
@@ -46,36 +44,56 @@ const GraphVisualization = ({graphData, onNodeClick, selectedNodeId}) => {
 
     svg.call(zoom);
 
-    const simulation = d3.forceSimulation(graphData.nodes)
-      .force('link', d3.forceLink(graphData.edges)
+    const links = graphData.edges.map(edge => ({
+      source: graphData.nodes.find(n => n.id === edge.source),
+      target: graphData.nodes.find(n => n.id === edge.target),
+      type: edge.type,
+    })).filter(link => link.source && link.target);
+
+    // Apply filters
+    let filteredNodes = graphData.nodes;
+    if (filters) {
+      if (filters.paperType === 'foundational') {
+        filteredNodes = graphData.nodes.filter(n => n.type === 'referenced' || n.type === 'main');
+      } else if (filters.paperType === 'influential') {
+        filteredNodes = graphData.nodes.filter(n => n.type === 'citing' || n.type === 'main');
+      }
+
+      if (filters.minCitations > 0) {
+        filteredNodes = filteredNodes.filter(n => (n.citation_count || 0) >= filters.minCitations);
+      }
+    }
+
+    const filteredEdges = links.filter(link => 
+      filteredNodes.some(n => n.id === link.source.id) && 
+      filteredNodes.some(n => n.id === link.target.id)
+    );
+
+    const simulation = d3.forceSimulation(filteredNodes)
+      .force('link', d3.forceLink(filteredEdges)
         .id(d => d.id)
-        .distance(150))
-      .force('charge', d3.forceManyBody().strength(-400))
+        .distance(120))
+      .force('charge', d3.forceManyBody().strength(-500))
       .force('center', d3.forceCenter(width / 2, height / 2))
-      .force('collision', d3.forceCollide().radius(40));
+      .force('collision', d3.forceCollide().radius(50));
     
     simulationRef.current = simulation;
 
     const link = g.append('g')
       .attr('class', 'links')
       .selectAll('line')
-      .data(graphData.edges)
+      .data(filteredEdges)
       .join('line')
       .attr('class', 'graph-link')
-      .attr('stroke', '#404040')
-      .attr('stroke-width', d => {
-        const sourceCitations = d.source.citation_count || 0;
-        const targetCitations = d.target.citation_count || 0;
-        const maxCitations = Math.max(sourceCitations, targetCitations);
-        return maxCitations > 50000 ? 2 : 1.5;
-      })
-      .attr('stroke-opacity', 0.3)
+      .attr('stroke', '#555')
+      .attr('stroke-width', 1.5)
+      .attr('stroke-opacity', 0.4)
       .attr('marker-end', 'url(#arrowhead)');
 
     const nodeGroup = g.append('g')
       .attr('class', 'nodes')
       .selectAll('g')
-      .data(graphData.nodes)
+      .data(filteredNodes)
       .join('g')
       .attr('class', 'graph-node')
       .call(d3.drag()
@@ -90,7 +108,7 @@ const GraphVisualization = ({graphData, onNodeClick, selectedNodeId}) => {
       .attr('stroke', d => {
         if (d.id === selectedNodeId) return '#ffffff';
         if (d.id === graphData.centerNode) return '#ffffff';
-        return '#404040';
+        return '#4b5563';
       })
       .attr('stroke-width', d => {
         if (d.id === selectedNodeId) return 3;
@@ -103,34 +121,30 @@ const GraphVisualization = ({graphData, onNodeClick, selectedNodeId}) => {
       .append('text')
       .attr('class', 'citation-badge-text')
       .attr('x', 0)
-      .attr('y', d => -calculateNodeSize(d.citation_count || 0) - 8)
+      .attr('y', d => -calculateNodeSize(d.citation_count || 0) - 10)
       .attr('text-anchor', 'middle')
-      .attr('fill', '#888888')
-      .attr('font-size', '9px')
-      .attr('font-weight', '500')
-      .text(d => {
-        const count = d.citation_count || 0;
-        if (count >= 1000) return Math.floor(count / 1000) + 'k';
-        return count;
-      })
+      .attr('fill', '#d1d5db')
+      .attr('font-size', '10px')
+      .attr('font-weight', '600')
+      .text(d => formatCitationCount(d.citation_count || 0))
       .style('pointer-events', 'none');
-    
+
     nodeGroup.append('text')
-      .text(d => truncateText(d.title, 30))
+      .text(d => truncateText(d.title, 25))
       .attr('x', 0)
-      .attr('y', d => calculateNodeSize(d.citation_count || 0) + 16)
+      .attr('y', d => calculateNodeSize(d.citation_count || 0) + 18)
       .attr('text-anchor', 'middle')
       .attr('class', 'node-label')
-      .attr('fill', '#cccccc')
-      .attr('font-size', '10px')
-      .attr('font-weight', '400')
+      .attr('fill', '#e5e7eb')
+      .attr('font-size', '9px')
+      .attr('font-weight', '500')
       .style('pointer-events', 'none')
       .style('user-select', 'none');
 
     nodeGroup.on('click', (event, d) => {
       event.stopPropagation();
       onNodeClick(d);
-      
+
       d3.select(event.currentTarget).select('.node-circle')
         .transition()
         .duration(300)
@@ -140,63 +154,63 @@ const GraphVisualization = ({graphData, onNodeClick, selectedNodeId}) => {
         .attr('r', calculateNodeSize(d.citation_count || 0));
     });
 
-    nodeGroup.on('mouseenter', function(event, d) {
+    nodeGroup.on('mouseenter', function (event, d) {
       setHoveredNode(d);
-      
+
       link
         .transition()
         .duration(150)
         .attr('stroke-opacity', edge => {
-          return (edge.source.id === d.id || edge.target.id === d.id) ? 0.6 : 0.15;
+          return (edge.source.id === d.id || edge.target.id === d.id) ? 0.7 : 0.15;
         });
-      
+
       nodeGroup
         .transition()
         .duration(150)
         .style('opacity', node => {
           if (node.id === d.id) return 1;
-          const isConnected = graphData.edges.some(edge => 
+          const isConnected = filteredEdges.some(edge => 
             (edge.source.id === d.id && edge.target.id === node.id) ||
             (edge.target.id === d.id && edge.source.id === node.id)
           );
-          return isConnected ? 1 : 0.4;
+          return isConnected ? 1 : 0.35;
         });
-      
+
       d3.select(this).select('.node-circle')
         .transition()
         .duration(150)
-        .attr('r', calculateNodeSize(d.citation_count || 0) * 1.2);
-      
+        .attr('r', calculateNodeSize(d.citation_count || 0) * 1.25);
+
       d3.select(this).select('.node-label')
         .transition()
         .duration(150)
         .attr('fill', '#ffffff')
-        .attr('font-size', '11px');
+        .attr('font-size', '10px');
     });
 
-    nodeGroup.on('mouseleave', function(event, d) {
+    nodeGroup.on('mouseleave', function (event, d) {
       setHoveredNode(null);
-      
+
       link
         .transition()
         .duration(150)
-        .attr('stroke-opacity', 0.3);
-      
+        .attr('stroke-opacity', 0.4);
+
       nodeGroup
         .transition()
         .duration(150)
         .style('opacity', 1);
-      
+
       d3.select(this).select('.node-circle')
         .transition()
         .duration(150)
         .attr('r', calculateNodeSize(d.citation_count || 0));
-      
+
       d3.select(this).select('.node-label')
         .transition()
         .duration(150)
-        .attr('fill', '#cccccc')
-        .attr('font-size', '10px');
+        .attr('fill', '#e5e7eb')
+        .attr('font-size', '9px');
     });
 
     simulation.on('tick', () => {
@@ -230,7 +244,7 @@ const GraphVisualization = ({graphData, onNodeClick, selectedNodeId}) => {
       simulation.stop();
     };
     
-  }, [graphData, selectedNodeId, onNodeClick]);
+  }, [graphData, selectedNodeId, onNodeClick, filters]);
 
   const handleZoomIn = () => {
     const svg = d3.select(svgRef.current);
@@ -256,21 +270,10 @@ const GraphVisualization = ({graphData, onNodeClick, selectedNodeId}) => {
     );
   };
 
-  const toggleSimulation = () => {
-    if (simulationRef.current) {
-      if (isSimulating) {
-        simulationRef.current.stop();
-      } else {
-        simulationRef.current.restart();
-      }
-      setIsSimulating(!isSimulating);
-    }
-  };
-
   return (
     <div className="graph-container">
       <svg ref={svgRef} className="graph-svg" />
-      
+
       {hoveredNode && (
         <div className="graph-tooltip" style={{
           position: 'absolute',
@@ -278,25 +281,29 @@ const GraphVisualization = ({graphData, onNodeClick, selectedNodeId}) => {
           right: '20px',
           background: 'rgba(30, 30, 30, 0.95)',
           border: '1px solid rgba(255, 255, 255, 0.15)',
-          borderRadius: '6px',
-          padding: '10px 14px',
-          maxWidth: '280px',
+          borderRadius: '8px',
+          padding: '12px 16px',
+          maxWidth: '320px',
           fontSize: '12px',
           color: '#ffffff',
-          zIndex: 1000
+          zIndex: 1000,
+          backdropFilter: 'blur(4px)'
         }}>
-          <div style={{fontWeight: '500', marginBottom: '6px'}}>
-            {hoveredNode.title}
+          <div style={{ fontWeight: '600', marginBottom: '8px', fontSize: '13px' }}>
+            {truncateText(hoveredNode.title, 40)}
           </div>
-          <div style={{fontSize: '11px', color: '#999', display: 'flex', gap: '10px'}}>
-            {hoveredNode.year && <span>{hoveredNode.year}</span>}
-            {hoveredNode.citation_count && (
-              <span>{hoveredNode.citation_count.toLocaleString()} cites</span>
-            )}
+          <div style={{ fontSize: '11px', color: '#d1d5db', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
+            <span>Year: {hoveredNode.year || 'N/A'}</span>
+            <span>Citations: {formatCitationCount(hoveredNode.citation_count || 0)}</span>
+          </div>
+          <div style={{ fontSize: '10px', color: '#9ca3af', padding: '8px 0', borderTop: '1px solid rgba(255, 255, 255, 0.1)', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', marginBottom: '8px' }}>
+            {hoveredNode.type === 'main' && 'Main Paper (Center)'}
+            {hoveredNode.type === 'citing' && 'Influential (Builds on this work)'}
+            {hoveredNode.type === 'referenced' && 'Foundational (This work cites)'}
           </div>
         </div>
       )}
-      
+
       <div className="graph-controls">
         <button onClick={handleZoomIn} className="control-button" title="Zoom In">
           <ZoomIn size={18} />
@@ -307,38 +314,53 @@ const GraphVisualization = ({graphData, onNodeClick, selectedNodeId}) => {
         <button onClick={handleReset} className="control-button" title="Reset View">
           <Maximize2 size={18} />
         </button>
-        <button onClick={toggleSimulation} className="control-button" title={isSimulating ? 'Pause' : 'Play'}>
-          {isSimulating ? <Pause size={18} /> : <Play size={18} />}
-        </button>
       </div>
-      
+
       {graphData && (
         <div className="graph-info">
-          <span>{graphData.nodes?.length || 0} nodes</span>
-          <span>{graphData.edges?.length || 0} connections</span>
+          <span>{graphData.nodes?.length || 0} papers</span>
+          <span>{graphData.edges?.length || 0} citations</span>
         </div>
       )}
-      
+
       <div className="graph-legend" style={{
         position: 'absolute',
         bottom: '80px',
         left: '20px',
-        background: 'rgba(30, 30, 30, 0.9)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        borderRadius: '6px',
-        padding: '10px 12px',
-        fontSize: '10px',
-        color: '#999'
+        background: 'rgba(30, 30, 30, 0.92)',
+        border: '1px solid rgba(255, 255, 255, 0.12)',
+        borderRadius: '8px',
+        padding: '14px 16px',
+        fontSize: '11px',
+        color: '#d1d5db',
+        maxWidth: '280px'
       }}>
-        <div style={{fontWeight: '500', marginBottom: '6px', color: '#ccc'}}>Legend</div>
-        <div style={{display: 'flex', flexDirection: 'column', gap: '5px'}}>
-          <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-            <div style={{width: '10px', height: '10px', borderRadius: '50%', background: '#ffffff', border: '2px solid #404040'}}></div>
-            <span>Main Paper</span>
+        <div style={{ fontWeight: '600', marginBottom: '10px', color: '#ffffff', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <BookOpen size={14} />
+          Citation Graph
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: '#ffffff', border: '2.5px solid #666' }}></div>
+            <span>Center Paper (Your focus)</span>
           </div>
-          <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-            <div style={{width: '14px', height: '14px', borderRadius: '50%', background: '#667eea'}}></div>
-            <span>Size = Citations</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: '#3b82f6' }}></div>
+            <span>Foundational (Papers cited)</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: '#10b981' }}></div>
+            <span>Influential (Papers that cite)</span>
+          </div>
+          <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid rgba(255, 255, 255, 0.1)', fontSize: '10px', color: '#9ca3af', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <TrendingUp size={12} />
+              <span>Larger circles = more cited</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Share2 size={12} />
+              <span>Arrows show citation direction</span>
+            </div>
           </div>
         </div>
       </div>
@@ -347,7 +369,3 @@ const GraphVisualization = ({graphData, onNodeClick, selectedNodeId}) => {
 };
 
 export default GraphVisualization;
-
-
-
-    
