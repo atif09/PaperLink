@@ -70,13 +70,8 @@ const PaperDetails = ({ paper, onClose }) => {
             </div>
           </div>
         )}
-        
-        {paper.abstract && (
-          <div className="details-section">
-            <h3 className="section-title">Abstract</h3>
-            <p className="abstract-text">{paper.abstract}</p>
-          </div>
-        )}
+
+    
 
         {showInsights && (
           <div className="details-section">

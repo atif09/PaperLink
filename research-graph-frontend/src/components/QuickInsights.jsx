@@ -1,5 +1,5 @@
 import React from 'react';
-import { Lightbulb, Target, TrendingUp, Database} from 'lucide-react';
+import { Lightbulb, TrendingUp, Database } from 'lucide-react';
 
 const QuickInsights = ({ insights }) => {
   if (!insights) return null;
@@ -21,14 +21,14 @@ const QuickInsights = ({ insights }) => {
     <div className="quick-insights">
       <div className="insights-header">
         <Lightbulb size={18} />
-        <span>Quick Insights</span>
+        <span>Paper Summary</span>
       </div>
 
       {insights.metrics.length > 0 && (
         <div className="insights-section">
           <h4 className="insights-section-title">Key Metrics</h4>
           <div className="metrics-grid">
-            {insights.metrics.slice(0, 4).map((metric, idx) => (
+            {insights.metrics.slice(0, 3).map((metric, idx) => (
               <div key={idx} className="metric-item">
                 {getMetricIcon(metric.type)}
                 <span>{metric.fullMatch}</span>
@@ -38,23 +38,10 @@ const QuickInsights = ({ insights }) => {
         </div>
       )}
 
-      {insights.problemSolved && (
+      {insights.abstractExcerpt && (
         <div className="insights-section">
-          <h4 className="insights-section-title">
-            <Target size={14} />
-            Problem Addressed
-          </h4>
-          <p className="insight-text">{insights.problemSolved}</p>
-        </div>
-      )}
-
-      {insights.mainContribution && (
-        <div className="insights-section">
-          <h4 className="insights-section-title">
-            <Lightbulb size={14} />
-            Main Contribution
-          </h4>
-          <p className="insight-text">{insights.mainContribution}</p>
+          <h4 className="insights-section-title">Abstract</h4>
+          <p className="insight-text">{insights.abstractExcerpt}...</p>
         </div>
       )}
 
