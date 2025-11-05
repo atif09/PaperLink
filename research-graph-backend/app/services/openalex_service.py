@@ -81,9 +81,9 @@ class OpenAlexService:
         
         papers = []
         for work in data.get('results', []):
-            paper = self._cache_paper(work)
+            paper = self._cache_paper(work, include_abstract=True)
             if paper:
-                papers.append(paper.to_dict(include_authors=True, include_abstract=False))
+                papers.append(paper.to_dict(include_authors=True, include_abstract=True))
         
         return {
             'results': papers,
@@ -181,9 +181,9 @@ class OpenAlexService:
         
         citing_papers = []
         for work in data.get('results', []):
-            citing_paper = self._cache_paper(work)
+            citing_paper = self._cache_paper(work, include_abstract=True)
             if citing_paper:
-                citing_papers.append(citing_paper.to_dict(include_authors=True, include_abstract=False))
+                citing_papers.append(citing_paper.to_dict(include_authors=True, include_abstract=True))
 
         return citing_papers
 
@@ -200,9 +200,9 @@ class OpenAlexService:
 
         referenced_papers = []
         for work in data.get('results', []):
-            cited_paper = self._cache_paper(work)
+            cited_paper = self._cache_paper(work, include_abstract=True)
             if cited_paper:
-                referenced_papers.append(cited_paper.to_dict(include_authors=True, include_abstract=False))
+                referenced_papers.append(cited_paper.to_dict(include_authors=True, include_abstract=True))
         
         return referenced_papers
     
