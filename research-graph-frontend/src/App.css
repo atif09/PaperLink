@@ -1497,7 +1497,7 @@
 
 .citation-network-filter {
   position: absolute;
-  top: 20px;
+  bottom: 80px;           /* Changed from top: 20px */
   left: 20px;
   width: 280px;
   background: var(--bg-primary);
@@ -1505,6 +1505,8 @@
   border-radius: 8px;
   padding: 16px;
   z-index: 10;
+  max-height: calc(100vh - 400px);  /* Added */
+  overflow-y: auto;                  /* Added */
 }
 
 .filter-header {
@@ -1596,12 +1598,14 @@
   position: absolute;
   top: 20px;
   right: 20px;
-  width: 320px;
+  width: 300px;                      /* Changed from 320px */
+  max-height: calc(100vh - 180px);  /* Added */
   background: var(--bg-primary);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 16px;
   z-index: 10;
+  overflow-y: auto;                  /* Added */
 }
 
 .stats-header {
@@ -1682,4 +1686,185 @@
 .stat-detail {
   font-size: 11px;
   color: var(--text-secondary);
+}
+
+/* Network Stats Dropdown - Hover-based with horizontal layout */
+.network-stats-dropdown {
+  position: absolute;
+  bottom: 410px;
+  left: 20px;
+  min-width: 280px;
+  max-width: 600px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  z-index: 10;
+  transition: all 0.3s ease;
+}
+
+.stats-dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.stats-dropdown-header:hover {
+  background: var(--hover);
+}
+
+.stats-dropdown-header span {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.paper-count {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  background: var(--bg-tertiary);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.stats-dropdown-content {
+  padding: 0 12px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Horizontal grid for compact stats */
+.stats-grid-horizontal {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.stat-card-compact {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  transition: all 0.2s;
+  align-items: center;
+}
+
+.stat-card-compact:hover {
+  background: var(--hover);
+  border-color: var(--text-tertiary);
+}
+
+.stat-card-full {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  transition: all 0.2s;
+  align-items: center;
+}
+
+.stat-card-full:hover {
+  background: var(--hover);
+  border-color: var(--text-tertiary);
+}
+
+.stat-icon-small {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--bg-tertiary);
+  border-radius: 5px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.stat-content-compact {
+  flex: 1;
+  min-width: 0;
+}
+
+.stat-label-small {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 2px;
+}
+
+.stat-value-small {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stat-detail-small {
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* Citation Network Filter - Below Network Stats */
+.citation-network-filter {
+  position: absolute;
+  bottom: 80px;
+  left: 20px;
+  width: 280px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  z-index: 10;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+/* Scrollbar styling for panels */
+.citation-network-filter::-webkit-scrollbar,
+.stats-dropdown-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.citation-network-filter::-webkit-scrollbar-track,
+.stats-dropdown-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.citation-network-filter::-webkit-scrollbar-thumb,
+.stats-dropdown-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.citation-network-filter::-webkit-scrollbar-thumb:hover,
+.stats-dropdown-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
