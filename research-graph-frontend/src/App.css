@@ -1689,9 +1689,10 @@
 }
 
 /* Network Stats Dropdown - Hover-based with horizontal layout */
+/* Network Stats Dropdown - Hover-based on TOP LEFT */
 .network-stats-dropdown {
   position: absolute;
-  bottom: 410px;
+  top: 20px;
   left: 20px;
   min-width: 280px;
   max-width: 600px;
