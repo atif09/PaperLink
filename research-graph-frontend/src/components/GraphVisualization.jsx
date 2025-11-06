@@ -304,66 +304,7 @@ const GraphVisualization = ({ graphData, onNodeClick, selectedNodeId, filters })
         </div>
       )}
 
-      <div className="graph-controls">
-        <button onClick={handleZoomIn} className="control-button" title="Zoom In">
-          <ZoomIn size={18} />
-        </button>
-        <button onClick={handleZoomOut} className="control-button" title="Zoom Out">
-          <ZoomOut size={18} />
-        </button>
-        <button onClick={handleReset} className="control-button" title="Reset View">
-          <Maximize2 size={18} />
-        </button>
-      </div>
-
-      {graphData && (
-        <div className="graph-info">
-          <span>{graphData.nodes?.length || 0} papers</span>
-          <span>{graphData.edges?.length || 0} citations</span>
-        </div>
-      )}
-
-      <div className="graph-legend" style={{
-        position: 'absolute',
-        bottom: '80px',
-        left: '20px',
-        background: 'rgba(30, 30, 30, 0.92)',
-        border: '1px solid rgba(255, 255, 255, 0.12)',
-        borderRadius: '8px',
-        padding: '14px 16px',
-        fontSize: '11px',
-        color: '#d1d5db',
-        maxWidth: '280px'
-      }}>
-        <div style={{ fontWeight: '600', marginBottom: '10px', color: '#ffffff', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <BookOpen size={14} />
-          Citation Graph
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: '#ffffff', border: '2.5px solid #666' }}></div>
-            <span>Center Paper (Your focus)</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: '#3b82f6' }}></div>
-            <span>Foundational (Papers cited)</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: '#10b981' }}></div>
-            <span>Influential (Papers that cite)</span>
-          </div>
-          <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid rgba(255, 255, 255, 0.1)', fontSize: '10px', color: '#9ca3af', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <TrendingUp size={12} />
-              <span>Larger circles = more cited</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Share2 size={12} />
-              <span>Arrows show citation direction</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      
     </div>
   );
 };
