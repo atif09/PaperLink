@@ -1,8 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { TrendingUp, Award, Calendar, BarChart3 } from 'lucide-react';
 import { formatCitationCount } from '../utils/graphUtils';
 
 const NetworkStats = ({ graphData, filters }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
   const stats = useMemo(() => {
     if (!graphData || !graphData.nodes || graphData.nodes.length === 0) {
       return null;
@@ -57,58 +59,63 @@ const NetworkStats = ({ graphData, filters }) => {
   }
 
   return (
-    <div className="network-stats-panel">
-      <div className="stats-header">
+    <div 
+      className="network-stats-dropdown"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div className="stats-dropdown-header">
         <BarChart3 size={18} />
         <span>Network Analysis</span>
         <div className="paper-count">{stats.totalPapers} papers</div>
       </div>
 
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-icon">
-            <Award size={16} />
-          </div>
-          <div className="stat-content">
-            <div className="stat-label">Most Cited</div>
-            <div className="stat-value">{stats.mostCited.title?.substring(0, 30)}...</div>
-            <div className="stat-detail">{formatCitationCount(stats.mostCited.citation_count || 0)} citations</div>
-          </div>
-        </div>
+      {isHovered && (
+        <div className="stats-dropdown-content">
+          <div className="stats-grid-horizontal">
+            <div className="stat-card-compact">
+              <div className="stat-icon-small">
+                <TrendingUp size={14} />
+              </div>
+              <div className="stat-content-compact">
+                <div className="stat-label-small">Avg Citations</div>
+                <div className="stat-value-small">{formatCitationCount(stats.avgCitations)}</div>
+              </div>
+            </div>
 
-        <div className="stat-card">
-          <div className="stat-icon">
-            <TrendingUp size={16} />
-          </div>
-          <div className="stat-content">
-            <div className="stat-label">Avg Citations</div>
-            <div className="stat-value">{formatCitationCount(stats.avgCitations)}</div>
-            <div className="stat-detail">per paper</div>
-          </div>
-        </div>
+            <div className="stat-card-compact">
+              <div className="stat-icon-small">
+                <TrendingUp size={14} />
+              </div>
+              <div className="stat-content-compact">
+                <div className="stat-label-small">Velocity</div>
+                <div className="stat-value-small">{formatCitationCount(stats.citationVelocity)}/yr</div>
+              </div>
+            </div>
 
-        <div className="stat-card">
-          <div className="stat-icon">
-            <TrendingUp size={16} />
+            <div className="stat-card-compact">
+              <div className="stat-icon-small">
+                <Calendar size={14} />
+              </div>
+              <div className="stat-content-compact">
+                <div className="stat-label-small">Year Range</div>
+                <div className="stat-value-small">{stats.yearRange}</div>
+              </div>
+            </div>
           </div>
-          <div className="stat-content">
-            <div className="stat-label">Citation Velocity</div>
-            <div className="stat-value">{formatCitationCount(stats.citationVelocity)}/yr</div>
-            <div className="stat-detail">average rate</div>
-          </div>
-        </div>
 
-        <div className="stat-card">
-          <div className="stat-icon">
-            <Calendar size={16} />
-          </div>
-          <div className="stat-content">
-            <div className="stat-label">Year Range</div>
-            <div className="stat-value">{stats.yearRange}</div>
-            <div className="stat-detail">publication span</div>
+          <div className="stat-card-full">
+            <div className="stat-icon-small">
+              <Award size={14} />
+            </div>
+            <div className="stat-content-compact">
+              <div className="stat-label-small">Most Cited Paper</div>
+              <div className="stat-value-small">{stats.mostCited.title?.substring(0, 35)}...</div>
+              <div className="stat-detail-small">{formatCitationCount(stats.mostCited.citation_count || 0)} citations</div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

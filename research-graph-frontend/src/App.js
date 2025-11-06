@@ -5,7 +5,7 @@ import PaperCard from './components/PaperCard';
 import GraphVisualization from './components/GraphVisualization';
 import PaperDetails from './components/PaperDetails';
 import FilterPanel from './components/FilterPanel';
-import StatsPanel from './components/StatsPanel';
+
 import CategoryFilter from './components/CategoryFilter';
 import ReadingPath from './components/ReadingPath';
 import ComplexityFilter from './components/ComplexityFilter';
@@ -41,7 +41,7 @@ function App() {
     per_page: 20,
   });
 
-  // Graph filtering state
+
   const [graphFilters, setGraphFilters] = useState({
     paperType: 'all',
     minCitations: 0
@@ -305,7 +305,7 @@ function App() {
             </div>
           ) : graphData ? (
             <>
-              <StatsPanel stats={stats} />
+           
               
               {readingPath && (readingPath.foundational?.length > 0 || readingPath.buildingOn?.length > 0) && (
                 <ReadingPath 
