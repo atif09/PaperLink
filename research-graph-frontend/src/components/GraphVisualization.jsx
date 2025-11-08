@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
-import { ZoomIn, ZoomOut, Maximize2, BookOpen, TrendingUp, Share2 } from 'lucide-react';
+import { ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 import { calculateNodeSize, truncateText, getNodeColor, formatCitationCount } from '../utils/graphUtils';
 
 const GraphVisualization = ({ graphData, onNodeClick, selectedNodeId, filters }) => {
@@ -75,7 +75,7 @@ const GraphVisualization = ({ graphData, onNodeClick, selectedNodeId, filters })
       if (!node.x) node.x = width / 2 + (Math.random() - 0.5) * 100;
       if (!node.y) node.y = height / 2 + (Math.random() - 0.5) * 100;
     });
-    
+
     const filterEndTime = performance.now();
     const filterDuration = filterEndTime - filterStartTime;
 

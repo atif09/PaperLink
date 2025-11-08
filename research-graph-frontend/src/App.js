@@ -44,7 +44,7 @@ function App() {
     minCitations: 0
   });
 
-  const [stats, setStats] = useState(null);
+ 
   const [view, setView] = useState('search');
 
   const handleSearch = useCallback(async (query) => {
@@ -74,12 +74,7 @@ function App() {
         if (fallbackResults.length > 0) {
           const categorized = categorizePapers(fallbackResults);
 
-          const counts = {
-            all: categorized.length,
-            Beginner: categorized.filter(p => p.complexityLevel === 'Beginner').length,
-            Intermediate: categorized.filter(p => p.complexityLevel === 'Intermediate').length,
-            Advanced: categorized.filter(p => p.complexityLevel === 'Advanced').length,
-          };
+          
 
 
           setSearchResults(categorized);
@@ -124,7 +119,7 @@ function App() {
     setGraphFilters({ paperType: 'all', minCitations: 0 });
 
     try {
-      const details = await getPaperDetails(paper.id);
+      
       const graphResponse = await getCitationGraph(paper.id, 1);
 
       const processed = processGraphData(graphResponse.graph);
