@@ -12,6 +12,8 @@ const GraphVisualization = ({ graphData, onNodeClick, selectedNodeId, filters })
   useEffect(() => {
     if (!graphData || !graphData.nodes || graphData.nodes.length === 0) return;
 
+    const filterStartTime = performance.now();
+    
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
@@ -69,13 +71,27 @@ const GraphVisualization = ({ graphData, onNodeClick, selectedNodeId, filters })
       filteredNodes.some(n => n.id === link.target.id)
     );
 
+    filteredNodes.forEach(node => {
+      if (!node.x) node.x = width / 2 + (Math.random() - 0.5) * 100;
+      if (!node.y) node.y = height / 2 + (Math.random() - 0.5) * 100;
+    });
+    
+    const filterEndTime = performance.now();
+    const filterDuration = filterEndTime - filterStartTime;
+
+    // Track render start
+    const renderStartTime = performance.now();
+
     const simulation = d3.forceSimulation(filteredNodes)
       .force('link', d3.forceLink(filteredEdges)
         .id(d => d.id)
         .distance(120))
       .force('charge', d3.forceManyBody().strength(-500))
       .force('center', d3.forceCenter(width / 2, height / 2))
-      .force('collision', d3.forceCollide().radius(50));
+      .force('collision', d3.forceCollide().radius(50))
+      .alpha(0.15)
+      .alphaDecay(0.15);
+      
     
     simulationRef.current = simulation;
 
@@ -221,10 +237,26 @@ const GraphVisualization = ({ graphData, onNodeClick, selectedNodeId, filters })
         .attr('y2', d => d.target.y);
       
       nodeGroup.attr('transform', d => `translate(${d.x},${d.y})`);
+
+      
+      if (simulation.alpha() < 0.05) {
+        const renderEndTime = performance.now();
+        const renderDuration = renderEndTime - renderStartTime;
+        const totalDuration = renderEndTime - filterStartTime;
+        
+        console.log(`[PERFORMANCE STATS]`);
+        console.log(`  Filter time: ${filterDuration.toFixed(2)}ms`);
+        console.log(`  Render time: ${renderDuration.toFixed(2)}ms`);
+        console.log(`  Total time: ${totalDuration.toFixed(2)}ms`);
+        console.log(`  Nodes: ${filteredNodes.length}, Edges: ${filteredEdges.length}`);
+      }
+
     });
 
+    
+
     function dragstarted(event, d) {
-      if (!event.active) simulation.alphaTarget(0.3).restart();
+      if (!event.active) simulation.alphaTarget(0.1).restart();
       d.fx = d.x;
       d.fy = d.y;
     }

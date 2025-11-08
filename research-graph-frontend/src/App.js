@@ -6,14 +6,13 @@ import GraphVisualization from './components/GraphVisualization';
 import PaperDetails from './components/PaperDetails';
 import FilterPanel from './components/FilterPanel';
 
-import CategoryFilter from './components/CategoryFilter';
+
 import ReadingPath from './components/ReadingPath';
-import ComplexityFilter from './components/ComplexityFilter';
 import LibrarySidebar from './components/LibrarySidebar';
 import CitationNetworkFilter from './components/CitationNetworkFilter';
 import NetworkStats from './components/NetworkStats';
 
-import { analyzeComplexity, filterByComplexity } from './utils/complexityAnalysis';
+import CategoryFilter from './components/CategoryFilter';
 import { generateRelatedPapers } from './utils/readingPath';
 import { categorizePapers, sortPapersByCategory } from './utils/paperCategorization';
 import { searchPapers, getPaperDetails, getCitationGraph } from './services/api';
@@ -23,8 +22,6 @@ import { Network, Library } from 'lucide-react';
 
 function App() {
   const [showLibrary, setShowLibrary] = useState(false);
-  const [activeComplexity, setActiveComplexity] = useState('all');
-  const [complexityCounts, setComplexityCounts] = useState({});
   const [readingPath, setReadingPath] = useState(null);
   const [activeCategory, setActiveCategory] = useState('all');
   const [categorizedResults, setCategorizedResults] = useState([]);
@@ -57,20 +54,14 @@ function App() {
       const data = await searchPapers(query, filters);
       const results = data.results || [];
       const categorized = categorizePapers(results);
-      const analyzed = categorized.map(paper => analyzeComplexity(paper));
 
-      const counts = {
-        all: analyzed.length,
-        Beginner: analyzed.filter(p => p.complexityLevel === 'Beginner').length,
-        Intermediate: analyzed.filter(p => p.complexityLevel === 'Intermediate').length,
-        Advanced: analyzed.filter(p => p.complexityLevel === 'Advanced').length,
-      };
 
-      setComplexityCounts(counts);
-      setSearchResults(analyzed);
-      setCategorizedResults(analyzed);
+      
+
+      
+      setSearchResults(categorized);
+      setCategorizedResults(categorized);
       setActiveCategory('all');
-      setActiveComplexity('all');
       setView('search');
     } catch (error) {
       console.error('Search failed:', error);
@@ -82,20 +73,19 @@ function App() {
         
         if (fallbackResults.length > 0) {
           const categorized = categorizePapers(fallbackResults);
-          const analyzed = categorized.map(paper => analyzeComplexity(paper));
 
           const counts = {
-            all: analyzed.length,
-            Beginner: analyzed.filter(p => p.complexityLevel === 'Beginner').length,
-            Intermediate: analyzed.filter(p => p.complexityLevel === 'Intermediate').length,
-            Advanced: analyzed.filter(p => p.complexityLevel === 'Advanced').length,
+            all: categorized.length,
+            Beginner: categorized.filter(p => p.complexityLevel === 'Beginner').length,
+            Intermediate: categorized.filter(p => p.complexityLevel === 'Intermediate').length,
+            Advanced: categorized.filter(p => p.complexityLevel === 'Advanced').length,
           };
 
-          setComplexityCounts(counts);
-          setSearchResults(analyzed);
-          setCategorizedResults(analyzed);
+
+          setSearchResults(categorized);
+          setCategorizedResults(categorized);
           setActiveCategory('all');
-          setActiveComplexity('all');
+      
           console.log('Fallback search successful');
         } else {
           // If even fallback fails, show empty
@@ -113,20 +103,6 @@ function App() {
     }
   }, [filters]);
 
-  const handleComplexityChange = (complexity) => {
-    setActiveComplexity(complexity);
-    let results = categorizedResults;
-    
-    if (activeCategory !== 'all') {
-      results = sortPapersByCategory(results, activeCategory);
-    }
-    
-    if (complexity !== 'all') {
-      results = filterByComplexity(results, complexity);
-    }
-    
-    setSearchResults(results);
-  };
 
   const handleCategoryChange = (category) => {
     setActiveCategory(category);
@@ -136,9 +112,6 @@ function App() {
       results = sortPapersByCategory(results, category);
     }
 
-    if (activeComplexity !== 'all') {
-      results = filterByComplexity(results, activeComplexity);
-    }
 
     setSearchResults(results);
   };
@@ -257,13 +230,6 @@ function App() {
                 onFilterChange={handleFilterChange}
                 onReset={handleResetFilters}
               />
-              {searchResults.length > 0 && (
-                <ComplexityFilter
-                  activeComplexity={activeComplexity}
-                  onComplexityChange={handleComplexityChange}
-                  counts={complexityCounts}
-                />
-              )}
             </div>
 
             <div className="search-results-container">
@@ -273,6 +239,8 @@ function App() {
                   onCategoryChange={handleCategoryChange}
                 />
               )}
+              
+              
               
               <div className="search-results">
                 {searchResults.length === 0 && !isSearching && (
