@@ -4,7 +4,7 @@ import {useDebounce} from '../hooks/useDebounce';
 
 const SearchBar = ({onSearch, isLoading}) => {
   const [query, setQuery] = useState('');
-  const debouncedQuery = useDebounce(query, 600);
+  const debouncedQuery = useDebounce(query, 100);
 
   React.useEffect(() => {
     if (debouncedQuery.trim().length > 2) {
