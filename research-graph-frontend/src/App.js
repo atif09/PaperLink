@@ -44,6 +44,13 @@ function App() {
     minCitations: 0
   });
 
+  const[stats, setStats] = useState({
+    totalPapers: 0,
+    totalConnections:0,
+    avgCitations:0,
+    yearRange:'N/A'
+  })
+
  
   const [view, setView] = useState('search');
 
@@ -55,10 +62,6 @@ function App() {
       const results = data.results || [];
       const categorized = categorizePapers(results);
 
-
-      
-
-      
       setSearchResults(categorized);
       setCategorizedResults(categorized);
       setActiveCategory('all');
