@@ -2,7 +2,6 @@ import os
 from app import create_app, db
 from app.models import Paper, Author, Citation
 
-# Auto-detect production environment
 if os.environ.get('DATABASE_URL'):
     config_name = 'production'
 else:
