@@ -109,8 +109,7 @@ function App() {
     if (category !== 'all') {
       results = sortPapersByCategory(results, category);
     }
-
-
+    
     setSearchResults(results);
   };
 
@@ -231,32 +230,38 @@ function App() {
             </div>
 
             <div className="search-results-container">
-              {searchResults.length > 0 && (
+              {categorizedResults.length > 0 && (
                 <CategoryFilter 
                   activeCategory={activeCategory}
                   onCategoryChange={handleCategoryChange}
                 />
               )}
               
-              
-              
               <div className="search-results">
-                {searchResults.length === 0 && !isSearching && (
+                {searchResults.length === 0 && !isSearching ? (
                   <div className="empty-state">
                     <Network size={64} />
-                    <h2>Discover Research Networks</h2>
-                    <p>Search for papers to visualize citation relationships</p>
+                    <h2>
+                      {activeCategory === 'all'
+                      ? 'Discover Research Networks'
+                      : 'No papers found in this category'}
+                    </h2>
+                    <p>
+                      {activeCategory === 'all'
+                      ? 'Search for papers to visualize citation relationships'
+                      : 'Try another category or search term.'}
+                    </p>
                   </div>
+                ) : (
+                  searchResults.map(paper => (
+                    <PaperCard
+                      key={paper.id}
+                      paper={paper}
+                      onClick={handlePaperClick}
+                      isSelected={selectedPaper?.id === paper.id}
+                    />
+                  ))
                 )}
-
-                {searchResults.map(paper => (
-                  <PaperCard
-                    key={paper.id}
-                    paper={paper}
-                    onClick={handlePaperClick}
-                    isSelected={selectedPaper?.id === paper.id}
-                  />
-                ))}
               </div>
             </div>
           </div>
