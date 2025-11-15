@@ -26,9 +26,9 @@ const PaperCard = ({ paper, onClick, isSelected }) => {
       </div>
       
       <div className="paper-metadata">
-        <div className="metadata-item">
+        <div className="metadata-item" style={{ display: 'flex', alignItems: 'center', gap: '0.4em' }}>
           <Users size={14} />
-          <span>{paper.authors?.slice(0, 3).map(a => a.display_name).join(', ')}</span>
+          <span style={{ marginLeft: 0 }}>{paper.authors?.slice(0, 3).map(a => a.display_name).join(', ')}</span>
         </div>
         
         <div className="metadata-row">

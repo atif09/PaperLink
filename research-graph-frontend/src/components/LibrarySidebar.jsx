@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Library, Plus, Trash2, Download, X } from 'lucide-react';
-import { getCollections, createCollection, deleteCollection, getCollectionPapers, exportCollection } from '../services/library';
+import { getCollections, createCollection, deleteCollection, getCollectionPapers, exportCollection, generateBibTeX } from '../services/library';
 
 const LibrarySidebar = ({ isOpen, onClose, onPaperClick }) => {
   const [collections, setCollections] = useState([]);
@@ -64,22 +64,27 @@ const LibrarySidebar = ({ isOpen, onClose, onPaperClick }) => {
     }
   };
 
-  const handleExport = async () => {
-    if (!selectedCollection) return;
-
-    try {
-      const bibtex = await exportCollection(selectedCollection.id);
-      const blob = new Blob([bibtex], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${selectedCollection.name}.bib`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Failed to export collection:', error);
+  const handleExportBibTeX = async () => {
+    if (!collectionPapers.length) {
+      alert('No papers to export in this collection.');
+      return;
     }
+    const papers = collectionPapers.map(sp => sp.paper || sp);
+    const bibtex = generateBibTeX(papers);
+    if (!bibtex.trim()) {
+      alert('No valid BibTeX data to export.');
+      return;
+    }
+    const blob = new Blob([bibtex], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
 
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'papers.bib';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   if (!isOpen) return null;
@@ -161,7 +166,7 @@ const LibrarySidebar = ({ isOpen, onClose, onPaperClick }) => {
             <div className="collection-papers-panel">
               <div className="collection-papers-header">
                 <h3>{selectedCollection.name}</h3>
-                <button className="btn-export" onClick={handleExport}>
+                <button className="btn-export" onClick={handleExportBibTeX}>
                   <Download size={16} />
                   Export BibTeX
                 </button>

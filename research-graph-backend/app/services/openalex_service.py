@@ -83,7 +83,19 @@ class OpenAlexService:
         for work in data.get('results', []):
             paper = self._cache_paper(work, include_abstract=True)
             if paper:
-                papers.append(paper.to_dict(include_authors=True, include_abstract=True))
+          
+                paper_dict = paper.to_dict(include_authors=True, include_abstract=True)
+
+                if (not paper_dict.get('authors')) and work.get('authorships'):
+                    paper_dict['authors'] = [
+                        {
+                            'display_name': a.get('author', {}).get('display_name', 'Unknown Author'),
+                            'orcid': a.get('author', {}).get('orcid'),
+                            'id': a.get('author', {}).get('id')
+                        }
+                        for a in work.get('authorships', [])
+                    ]
+                papers.append(paper_dict)
         
         return {
             'results': papers,

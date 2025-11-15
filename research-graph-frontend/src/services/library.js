@@ -73,3 +73,21 @@ export const exportCollection = async (collectionId, format = 'bibtex') => {
   });
   return response.data;
 }
+
+export const generateBibTeX = (papers) => {
+  return papers.map(paper => {
+    const authors = (paper.authors || [])
+      .map(a => a.display_name || a.name || '')
+      .join(' and ');
+    const year = paper.publication_year || '';
+    const title = paper.title || '';
+    const journal = paper.venue || '';
+    const id = paper.id || title.replace(/\s+/g, '_');
+    return `@article{${id},
+  title={${title}},
+  author={${authors}},
+  journal={${journal}},
+  year={${year}}
+}`;
+  }).join('\n\n');
+}
