@@ -1,10 +1,12 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from flask_cors import CORS
 from config import config
 import os
 
 db = SQLAlchemy()
+migrate = Migrate()
 
 
 def create_app(config_name='development'):
@@ -18,6 +20,7 @@ def create_app(config_name='development'):
         pass
     
     db.init_app(app)
+    migrate.init_app(app, db)
     
     
     CORS(app, resources={r"/*": {"origins": "*"}}, allow_headers="*", expose_headers="*")

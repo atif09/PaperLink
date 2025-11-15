@@ -2,10 +2,12 @@ services:
   - type: web
     name: paperlink-backend
     env: python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt && flask db upgrade
     startCommand: gunicorn run:app
     envVars:
       - key: FLASK_ENV
         value: production
+      - key: FLASK_APP
+        value: run.py
       - key: DATABASE_URL
         generateValue: true
