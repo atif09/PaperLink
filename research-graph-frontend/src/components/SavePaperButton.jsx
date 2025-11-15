@@ -67,7 +67,7 @@ const SavePaperButton = ({ paper }) => {
         <div className="save-paper-menu" onClick={(e) => e.stopPropagation()}>
           <div className="save-menu-header">Save to Collection</div>
           
-          {collections.length === 0 ? (
+          {(collections && collections.length === 0) ? (
             <div className="save-menu-empty">No collections yet</div>
           ) : (
             <div className="save-menu-list">
