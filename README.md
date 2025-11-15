@@ -1,7 +1,7 @@
 
 # PaperLink
 
-A modern academic research platform for discovering, analyzing, and organizing scholarly papers with intelligent categorization, interactive citation networks, and personal library management—no signup required.
+A modern academic research platform for discovering, analyzing, and organizing scholarly papers with intelligent categorization, interactive citation networks, and personal library management.
 
 ## Overview
 
@@ -15,7 +15,7 @@ PaperLink is a web-based application that provides access to millions of scholar
 - **Intelligent Categorization:** Automatic labeling of papers as Foundational, Trending, Recent, or Highly Cited based on citation data and publication age
 - **Dynamic Filtering:** Instantly filter results by publication year, citation count, and category to reduce network complexity and focus on relevant research
 - **Citation Network Visualization:** Interactive, force-directed D3.js graphs to explore citation relationships (both cited and citing papers)
-- **Personal Library:** Save papers to custom collections in your browser—no signup required
+- **Personal Library:** Save papers to custom collections in your browser.
 - **BibTeX Export:** Export your saved collections as BibTeX files for easy citation management in LaTeX and reference managers
 - **Responsive UI:** Clean, modern interface with real-time feedback and smooth navigation
 
