@@ -2,7 +2,11 @@ import os
 from app import create_app, db
 from app.models import Paper, Author, Citation
 
-config_name = os.environ.get('FLASK_ENV', 'development')
+# Auto-detect production environment
+if os.environ.get('DATABASE_URL'):
+    config_name = 'production'
+else:
+    config_name = os.environ.get('FLASK_ENV', 'development')
 
 app = create_app(config_name)
 
