@@ -13,6 +13,9 @@ def create_app(config_name='development'):
     app = Flask(__name__, instance_relative_config=True)
     
     app.config.from_object(config[config_name])
+   
+    if hasattr(config[config_name], 'init_app'):
+        config[config_name].init_app(app)
     
     try:
         os.makedirs(app.instance_path, exist_ok=True)
