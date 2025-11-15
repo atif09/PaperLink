@@ -1,56 +1,53 @@
+
 # PaperLink
 
-A modern academic research platform that helps researchers discover, analyze, and organize scholarly papers with intelligent categorization and interactive visualizations.
+A modern academic research platform for discovering, analyzing, and organizing scholarly papers with intelligent categorization, interactive citation networks, and personal library management—no signup required.
 
 ## Overview
 
-PaperLink is a web-based application that provides access to over 250 million scholarly works through the OpenAlex API. The platform features intelligent paper classification, complexity-based filtering, interactive citation network visualizations, and comprehensive reference management tools.
+PaperLink is a web-based application that provides access to millions of scholarly works through the OpenAlex API. The platform features smart paper classification, dynamic filtering, interactive citation network visualizations, and a personal library with BibTeX export—all in a fast, user-friendly interface.
 
 ## Features
 
 ### Core Functionality
 
-- **Comprehensive Search**: Access and search through 250M+ scholarly works via OpenAlex API integration
-- **Intelligent Classification**: Automatic categorization of papers as Foundational, Trending, Recent, or Highly Cited based on citation metadata analysis
-- **Complexity Assessment**: Abstract-based labeling system that classifies papers as Beginner, Intermediate, or Advanced level
-- **Citation Network Visualization**: Interactive force-directed graphs powered by D3.js to explore research landscapes and paper relationships
-- **Reference Management**: Built-in system with BibTeX export functionality and custom research paper collections
-- **Advanced Filtering**: Filter results by publication date, citation count, author, institution, and research domain
+- **Comprehensive Search:** Search and explore scholarly works via OpenAlex API integration
+- **Intelligent Categorization:** Automatic labeling of papers as Foundational, Trending, Recent, or Highly Cited based on citation data and publication age
+- **Dynamic Filtering:** Instantly filter results by publication year, citation count, and category to reduce network complexity and focus on relevant research
+- **Citation Network Visualization:** Interactive, force-directed D3.js graphs to explore citation relationships (both cited and citing papers)
+- **Personal Library:** Save papers to custom collections in your browser—no signup required
+- **BibTeX Export:** Export your saved collections as BibTeX files for easy citation management in LaTeX and reference managers
+- **Responsive UI:** Clean, modern interface with real-time feedback and smooth navigation
 
-### Classification System
+### Additional Features
 
-Papers are automatically classified into four categories:
-
-- **Foundational**: Highly cited classical papers that established key concepts in their field
-- **Trending**: Recent papers with rapidly growing citation counts indicating emerging importance
-- **Recent**: Newly published research from the last two years
-- **Highly Cited**: Papers with exceptional citation counts relative to their publication date and field
-
-### Complexity Levels
-
-Based on abstract analysis and readability metrics:
-
-- **Beginner**: Accessible papers suitable for those new to the topic
-- **Intermediate**: Standard research papers requiring domain familiarity
-- **Advanced**: Highly technical papers requiring specialized knowledge
+- **Paper Details:** View detailed metadata, including authors, venue, year, and citation count for each paper
+- **Quick Insights:** Extract and display key insights from papers (if available)
+- **Offline-Ready (PWA):** Installable as a Progressive Web App for offline access and native-like experience
+- **No Account Needed:** All features, including library and export, work without user registration—collections are stored locally
 
 ## Technology Stack
 
 ### Frontend
 - React.js
-- D3.js (Interactive data visualizations)
-- HTML5
-- CSS3
+- D3.js (for interactive visualizations)
+- HTML5, CSS3
 
 ### Backend
 - Python
-- Flask (Web framework)
+- Flask (API server)
 - SQLAlchemy (ORM)
 - SQLite (Database)
 
 ### External APIs
-- OpenAlex API (Scholarly metadata and citation data)
+- OpenAlex API (scholarly metadata and citation data)
 
 ### Deployment
 - Vercel (Frontend)
 - Render (Backend)
+
+---
+
+**Note:**
+- User collections and saved papers are stored locally in the browser for privacy and instant access.
+- The platform does not currently support user accounts or cloud sync.
