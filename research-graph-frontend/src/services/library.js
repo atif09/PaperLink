@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api/library';
+const API_BASE_URL = process.env.REACT_APP_LIBRARY_API_URL || `${window.location.origin}/api/library`;
 
 const getUserId = () => {
   let userId = localStorage.getItem('user_id');
