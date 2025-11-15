@@ -136,6 +136,7 @@ class Collection(db.Model):
 
 class SavedPaper(db.Model):
   __tablename__ = 'saved_papers'
+  
     
   id = db.Column(db.Integer, primary_key=True)
   paper_id = db.Column(db.String(50), db.ForeignKey('papers.id'), nullable=False)
@@ -148,10 +149,31 @@ class SavedPaper(db.Model):
   paper = db.relationship('Paper')
   collection = db.relationship('Collection', back_populates='saved_papers')
 
-  def to_dict(self):
+  def to_dict(self, include_authors=True):
+    import json
+    paper_obj = self.paper
+    if paper_obj:
+      paper_dict = paper_obj.to_dict(include_authors=include_authors, include_abstract=False)
+    else:
+      meta = {}
+      try:
+        if self.notes and self.notes.strip().startswith('{'):
+          meta = json.loads(self.notes)
+      except Exception:
+        meta = {}
+      paper_dict = {
+        'id': self.paper_id,
+        'title': meta.get('title', 'Unknown'),
+        'authors': meta.get('authors', []),
+        'publication_year': meta.get('publication_year'),
+        'venue': meta.get('venue'),
+        'doi': meta.get('doi'),
+        'citation_count': meta.get('citation_count')
+      }
     return {
       'id': self.id,
-      'paper': self.paper.to_dict(include_authors=True, include_abstract=False),
+      'paper': paper_dict,
+      'paper_id': self.paper_id,
       'collection_id': self.collection_id,
       'notes': self.notes,
       'status': self.status,

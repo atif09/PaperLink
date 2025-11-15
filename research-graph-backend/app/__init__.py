@@ -19,7 +19,8 @@ def create_app(config_name='development'):
     
     db.init_app(app)
     
-    CORS(app)
+    
+    CORS(app, resources={r"/*": {"origins": "*"}}, allow_headers="*", expose_headers="*")
     
     with app.app_context():
         from app.routes import search_bp, papers_bp, library_bp

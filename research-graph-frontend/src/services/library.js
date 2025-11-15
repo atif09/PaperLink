@@ -34,12 +34,17 @@ export const deleteCollection = async (collectionId) => {
   return response.data;
 };
 
-export const savePaper = async (paperId, collectionId, notes = '', status = 'to_read') => {
+export const savePaper = async (paperId, collectionId, notes = '', status = 'to_read', paperMeta = {}) => {
+  
+  let notesToSend = notes;
+  if (!notes && Object.keys(paperMeta).length > 0) {
+    notesToSend = JSON.stringify(paperMeta);
+  }
   const response = await axios.post(`${API_BASE_URL}/saved-papers`, {
     paper_id: paperId,
     collection_id: collectionId,
     user_id: getUserId(),
-    notes,
+    notes: notesToSend,
     status
   });
   return response.data;

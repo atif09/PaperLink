@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Bookmark, BookmarkCheck, Plus } from 'lucide-react';
 import { getCollections, savePaper, createCollection } from '../services/library';
 
@@ -7,10 +7,30 @@ const SavePaperButton = ({ paper }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [showNewCollection, setShowNewCollection] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState('');
+  const menuRef = useRef(null);
 
   useEffect(() => {
-    loadCollections();
-  }, []);
+    if (showMenu) {
+      loadCollections();
+    }
+  }, [showMenu]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false);
+        setShowNewCollection(false);
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMenu]);
 
   const loadCollections = async () => {
     try {
@@ -23,12 +43,25 @@ const SavePaperButton = ({ paper }) => {
 
   const handleSaveToPaper = async (collectionId) => {
     try {
-      await savePaper(paper.id, collectionId);
-      setShowMenu(false);
+      const meta = {
+        title: paper.title,
+        publication_year: paper.publication_year,
+        venue: paper.venue,
+        authors: paper.authors,
+        doi: paper.doi,
+        citation_count: paper.citation_count
+      };
+      await savePaper(paper.id, collectionId, '', 'to_read', meta);
       alert('Paper saved successfully');
     } catch (error) {
+      let msg = 'Failed to save paper';
+      if (error.response && error.response.data && error.response.data.error) {
+        msg += `: ${error.response.data.error}`;
+      }
       console.error('Failed to save paper:', error);
-      alert('Failed to save paper');
+      alert(msg);
+    } finally {
+      setShowMenu(false);
     }
   };
 
@@ -41,19 +74,25 @@ const SavePaperButton = ({ paper }) => {
       await savePaper(paper.id, data.collection.id);
       setNewCollectionName('');
       setShowNewCollection(false);
-      setShowMenu(false);
       loadCollections();
       alert('Collection created and paper saved!');
     } catch (error) {
-      console.error('Failed to create collection:', error)
-      alert('Failed to create collection');
+      let msg = 'Failed to create collection';
+      if (error.response && error.response.data && error.response.data.error) {
+        msg += `: ${error.response.data.error}`;
+      }
+      console.error('Failed to create collection:', error);
+      alert(msg);
+    } finally {
+      setShowMenu(false);
     }
   };
 
   return (
-    <div className="save-paper-container">
+    <div className="save-paper-container" ref={menuRef}>
       <button
         className="save-paper-button"
+        style={{ marginLeft: 1, marginTop: 10 }}
         onClick={(e) => {
           e.stopPropagation();
           setShowMenu(!showMenu);

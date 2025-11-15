@@ -185,14 +185,11 @@ const LibrarySidebar = ({ isOpen, onClose, onPaperClick }) => {
                         onClose();
                       }}
                     >
-                      <h4>{savedPaper.paper.title}</h4>
+                      <h4>{savedPaper.paper?.title || 'Unknown'}</h4>
                       <div className="saved-paper-meta">
-                        <span>{savedPaper.paper.publication_year}</span>
-                        <span>{savedPaper.paper.citation_count} citations</span>
+                        <span>{savedPaper.paper?.publication_year || 'n.d.'}</span>
+                        <span>{savedPaper.paper?.citation_count || 0} citations</span>
                       </div>
-                      {savedPaper.notes && (
-                        <p className="saved-paper-notes">{savedPaper.notes}</p>
-                      )}
                     </div>
                   ))
                 )}
