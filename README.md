@@ -1,7 +1,7 @@
 
 # PaperLink
 
-A modern academic research platform for discovering, analyzing, and organizing scholarly papers with intelligent categorization, interactive citation networks, and personal library management—no signup required.
+A modern academic research platform for discovering, analyzing, and organizing scholarly papers with intelligent categorization, interactive citation networks, and personal library management.
 
 ## Overview
 
