@@ -81,7 +81,7 @@ export const sortPapersByCategory = (papers, category) => {
 
     case 'all':
     default:
-      return categorized.sort((a, b) => b.relevanceScore - a.relevanceScore);
+      return categorized;
   }
 };
 

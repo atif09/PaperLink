@@ -56,37 +56,27 @@ function App() {
 
   const handleSearch = useCallback(async (query) => {
     setIsSearching(true);
-
     try {
       const data = await searchPapers(query, filters);
       const results = data.results || [];
       const categorized = categorizePapers(results);
-
       setSearchResults(categorized);
       setCategorizedResults(categorized);
       setActiveCategory('all');
       setView('search');
     } catch (error) {
       console.error('Search failed:', error);
-
       try {
         console.log('Attempting fallback search with "neural"...');
         const fallbackData = await searchPapers('neural', { per_page: 10 });
         const fallbackResults = fallbackData.results || [];
-        
         if (fallbackResults.length > 0) {
           const categorized = categorizePapers(fallbackResults);
-
-          
-
-
           setSearchResults(categorized);
           setCategorizedResults(categorized);
           setActiveCategory('all');
-      
           console.log('Fallback search successful');
         } else {
-          // If even fallback fails, show empty
           setSearchResults([]);
           setCategorizedResults([]);
         }
@@ -96,7 +86,6 @@ function App() {
         setCategorizedResults([]);
       }
     } finally {
-      // Always clear loading state
       setIsSearching(false);
     }
   }, [filters]);
@@ -117,7 +106,6 @@ function App() {
     setSelectedPaper(paper);
     setIsLoadingGraph(true);
     setView('graph');
-    // Reset graph filters when loading new paper
     setGraphFilters({ paperType: 'all', minCitations: 0 });
 
     try {
@@ -180,7 +168,7 @@ function App() {
       totalPapers: data.nodes.length,
       totalConnections: data.edges.length,
       avgCitations: Math.round(citations.reduce((a, b) => a + b, 0) / citations.length),
-      yearRange: years.length > 0 ? `${Math.min(...years)}–${Math.max(...years)}` : 'N/A',
+      yearRange: years.length > 0 ? `${Math.min(...years)}—${Math.max(...years)}` : 'N/A',
     });
   };
 
