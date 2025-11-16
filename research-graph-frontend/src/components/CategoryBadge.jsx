@@ -1,6 +1,6 @@
 import React from 'react';
 
-const CategoryBadge = ({ category}) => {
+const CategoryBadge = ({ category }) => {
   const getBadgeStyle = () => {
     switch(category.color) {
       case 'gold':
@@ -11,17 +11,20 @@ const CategoryBadge = ({ category}) => {
         return { background: '#1a1a2a', color: '#4d9fff', border: '1px solid #2a2a3a' };
       case 'purple':
         return { background: '#2a1a2a', color: '#b877ff', border: '1px solid #3a2a3a' };
+      case 'teal':
+        return { background: '#1a2a2a', color: '#14b8a6', border: '1px solid #2a3a3a' };
+      case 'gray':
+        return { background: '#2a2a2a', color: '#9ca3af', border: '1px solid #3a3a3a' };
       default:
         return { background: 'var(--bg-tertiary)', color: 'var(--text-secondary)', border: '1px solid var(--border)' };
     }
   };
 
-
   return (
     <span className="category-badge" style={getBadgeStyle()}>
       {category.label}
     </span>
-  )
+  );
 };
 
 export default CategoryBadge;
