@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookMarked, ArrowRight, Info } from 'lucide-react';
+import { BookMarked, ArrowDown, Info } from 'lucide-react';
 import { truncateText, formatCitationCount } from '../utils/graphUtils';
 
 const RelatedPapersPanel = ({ readingPath, onPaperClick }) => {
@@ -41,7 +41,7 @@ const RelatedPapersPanel = ({ readingPath, onPaperClick }) => {
                 </div>
                 {index < readingPath.foundational.length - 1 && (
                   <div className="path-arrow">
-                    <ArrowRight size={20} />
+                    <ArrowDown size={20} />
                   </div>
                 )}
               </React.Fragment>
@@ -71,7 +71,7 @@ const RelatedPapersPanel = ({ readingPath, onPaperClick }) => {
                 </div>
                 {index < readingPath.buildingOn.length - 1 && (
                   <div className="path-arrow">
-                    <ArrowRight size={20} />
+                    <ArrowDown size={20} />
                   </div>
                 )}
               </React.Fragment>

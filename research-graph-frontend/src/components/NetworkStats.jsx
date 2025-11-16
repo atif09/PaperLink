@@ -38,10 +38,35 @@ const NetworkStats = ({ graphData, filters }) => {
     const totalCitations = citations.reduce((sum, c) => sum + c, 0);
     const avgCitations = Math.round(totalCitations / citations.length);
 
-    const currentYear = new Date().getFullYear();
-    const avgYear = years.length > 0 ? Math.round(years.reduce((sum, y) => sum + y, 0) / years.length) : currentYear;
-    const avgAge = currentYear - avgYear;
-    const citationVelocity = avgAge > 0 ? Math.round(avgCitations / avgAge) : avgCitations;
+    const currentDate = new Date();
+    const velocities = filteredNodes
+      .map(n => {
+       
+        let pubDate;
+        if (n.publicationDate) {
+          pubDate = n.publicationDate instanceof Date ? n.publicationDate : new Date(n.publicationDate);
+        } else if (n.year || n.publication_year) {
+          const year = n.year || n.publication_year;
+          pubDate = new Date(year, 5, 30); 
+        } else {
+          return null; 
+        }
+
+        const ageMs = currentDate - pubDate;
+        const age = ageMs / (1000 * 60 * 60 * 24 * 365.25);
+
+        
+        if (age < 0.5 || isNaN(age) || age < 0) {
+          return null;
+        }
+
+        return (n.citation_count || 0) / age;
+      })
+      .filter(v => v !== null); 
+
+    const citationVelocity = velocities.length > 0 
+      ? Math.round(velocities.reduce((sum, v) => sum + v, 0) / velocities.length) 
+      : 0;
 
     const yearRange = years.length > 0 ? `${Math.min(...years)}-${Math.max(...years)}` : 'N/A';
 
@@ -50,7 +75,8 @@ const NetworkStats = ({ graphData, filters }) => {
       mostCited,
       avgCitations,
       citationVelocity,
-      yearRange
+      yearRange,
+      papersWithVelocity: velocities.length 
     };
   }, [graphData, filters]);
 

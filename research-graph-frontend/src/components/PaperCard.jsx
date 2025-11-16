@@ -6,9 +6,8 @@ import { getCategoryBadge } from '../utils/paperCategorization';
 import SavePaperButton from './SavePaperButton';
 
 const PaperCard = ({ paper, onClick, isSelected }) => {
-  const categoryBadge = paper.categories ? getCategoryBadge(paper.categories) : null;
+  const categoryBadge = paper.category ? getCategoryBadge(paper.category) : null;
   
-
   return (
     <div 
       className={`paper-card ${isSelected ? 'selected' : ''}`}
@@ -19,7 +18,11 @@ const PaperCard = ({ paper, onClick, isSelected }) => {
           <h3 className="paper-title">{truncateText(paper.title, 80)}</h3>
           <div className="paper-badges">
             {categoryBadge && <CategoryBadge category={categoryBadge} />}
-            
+            {typeof paper.citationVelocity === 'number' && paper.citationVelocity !== null && (
+              <span className="citation-velocity-badge" style={{ marginLeft: 8, fontSize: 12, color: '#22c55e', background: '#1a2a1a', borderRadius: 4, padding: '2px 6px' }}>
+                {paper.citationVelocity.toFixed(1)} /yr
+              </span>
+            )}
           </div>
         </div>
         <SavePaperButton paper={paper} />

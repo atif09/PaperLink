@@ -1,13 +1,16 @@
 import React from 'react';
-import {Sparkles, TrendingUp, Clock, Award} from 'lucide-react';
+import {Sparkles, TrendingUp, Clock, Award, BookOpen, BarChart3} from 'lucide-react';
 
 const CategoryFilter = ({ activeCategory, onCategoryChange }) => {
   const categories = [
     { id: 'all', label: 'All Papers', icon: null },
-    { id: 'foundational', label: 'Foundational', icon: Award },
-    { id: 'trending', label: 'Trending', icon: TrendingUp },
-    { id: 'recent', label: 'Recent', icon: Clock },
-    { id: 'highly-cited', label: 'Highly Cited', icon: Sparkles },
+    { id: 'Foundational', label: 'Foundational', icon: Award },
+    { id: 'Highly Cited', label: 'Highly Cited', icon: Sparkles },
+    { id: 'Trending', label: 'Trending', icon: TrendingUp },
+    { id: 'Emerging', label: 'Emerging', icon: BarChart3 },
+    { id: 'Recent', label: 'Recent', icon: Clock },
+    { id: 'Established', label: 'Established', icon: BookOpen },
+    
   ];
 
   return (
