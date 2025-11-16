@@ -61,7 +61,7 @@ class OpenAlexService:
             'page': page,
             'per_page': min(per_page, current_app.config['MAX_PAGE_SIZE'])
         }
-        
+
         filter_parts = []
         if filters:
             if filters.get('year_min'):
@@ -70,22 +70,20 @@ class OpenAlexService:
                 filter_parts.append(f"publication_year:<={filters['year_max']}")
             if filters.get('min_citations'):
                 filter_parts.append(f"cited_by_count:>={filters['min_citations']}")
-        
+
         if filter_parts:
             params['filter'] = ','.join(filter_parts)
-        
+
         data = self._make_request('/works', params=params)
-        
+
         if not data:
             return {'results': [], 'meta': {'count': 0, 'page': page}}
-        
+
         papers = []
         for work in data.get('results', []):
             paper = self._cache_paper(work, include_abstract=True)
             if paper:
-          
                 paper_dict = paper.to_dict(include_authors=True, include_abstract=True)
-
                 if (not paper_dict.get('authors')) and work.get('authorships'):
                     paper_dict['authors'] = [
                         {
@@ -96,7 +94,21 @@ class OpenAlexService:
                         for a in work.get('authorships', [])
                     ]
                 papers.append(paper_dict)
-        
+
+        def normalize(text):
+            import re
+            return re.sub(r'[^a-z0-9]+', '', text.lower()) if text else ''
+
+        norm_query = normalize(query)
+        best_match = None
+        for p in papers:
+            if norm_query and normalize(p.get('title')) == norm_query:
+                best_match = p
+                break
+
+        if best_match:
+            papers = [best_match] + [p for p in papers if p != best_match]
+
         return {
             'results': papers,
             'meta': {
@@ -222,11 +234,19 @@ class OpenAlexService:
         paper_id = work_data.get('id', '').split('/')[-1]
         if not paper_id:
             return None
-        
+
         paper = Paper(id=paper_id)
         paper.title = work_data.get('title', 'Untitled')
         paper.doi = work_data.get('doi', '').replace('https://doi.org/', '') if work_data.get('doi') else None
-        paper.publication_year = work_data.get('publication_year')
+
+        
+        pub_year = work_data.get('publication_year')
+        if not pub_year and work_data.get('publication_date'):
+            try:
+                pub_year = int(work_data['publication_date'][:4])
+            except Exception:
+                pub_year = None
+        paper.publication_year = pub_year
         paper.publication_date = work_data.get('publication_date')
 
         if work_data.get('primary_location'):
@@ -243,7 +263,7 @@ class OpenAlexService:
             inverted_abstract = work_data.get('abstract_inverted_index')
             if inverted_abstract:
                 paper.abstract = self._reconstruct_abstract(inverted_abstract)
-        
+
         paper.last_updated = datetime.utcnow()
 
         return paper
