@@ -23,7 +23,6 @@ PaperLink is a web-based application that provides access to millions of scholar
 
 - **Paper Details:** View detailed metadata, including authors, venue, year, and citation count for each paper
 - **Quick Insights:** Extract and display key insights from papers (if available)
-- **Offline-Ready (PWA):** Installable as a Progressive Web App for offline access and native-like experience
 - **No Account Needed:** All features, including library and export, work without user registration—collections are stored locally
 
 ## Technology Stack
