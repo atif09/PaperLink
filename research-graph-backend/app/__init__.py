@@ -4,6 +4,7 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from config import config
 import os
+from datetime import datetime
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -41,7 +42,14 @@ def create_app(config_name='development'):
         return {
             'status': 'healthy',
             'message': 'Research Graph API is running',
-            'version': '1.0.0'
+            'version': '1.0.0',
+            'timestamp': datetime.utcnow().isoformat()
+        }, 200
+    
+    @app.route('/ping')
+    def ping():
+        return {
+            'status': 'ok'
         }, 200
     
     @app.route('/')
