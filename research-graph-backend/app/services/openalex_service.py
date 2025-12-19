@@ -1,6 +1,9 @@
 import requests
 import time
 from datetime import datetime, timedelta
+import hashlib
+import threading
+import cachetools
 from flask import current_app
 from app import db
 from app.models import Paper, Author, Citation
@@ -41,6 +44,15 @@ class OpenAlexService:
             self.session.headers.update({
                 'User-Agent': f'ResearchGraphApp/1.0 (mailto:{self.email})'
             })
+
+        # in-memory TTL cache for search results to serve repeated queries instantly
+        try:
+            ttl = int(current_app.config.get('CACHE_DEFAULT_TIMEOUT', 60 * 60 * 24 * 30))
+        except Exception:
+            ttl = 60 * 60 * 24 * 30
+        # conservative max size to avoid memory blow-up on small Render instances
+        self._cache = cachetools.TTLCache(maxsize=1024, ttl=ttl)
+        self._cache_lock = threading.Lock()
     
     def _make_request(self, endpoint, params=None):
         self.rate_limiter.wait_if_needed()
@@ -61,6 +73,24 @@ class OpenAlexService:
             'page': page,
             'per_page': min(per_page, current_app.config['MAX_PAGE_SIZE'])
         }
+
+        # build a stable cache key from query + params + filters
+        key_parts = [query, str(page), str(per_page)]
+        if filters:
+            for k in sorted(filters.keys()):
+                key_parts.append(f"{k}={filters[k]}")
+        key_raw = "|".join(key_parts)
+        cache_key = hashlib.sha256(key_raw.encode('utf-8')).hexdigest()
+
+        # return cached results immediately if available
+        try:
+            with self._cache_lock:
+                cached = self._cache.get(cache_key)
+            if cached is not None:
+                return cached
+        except Exception:
+            # on any cache error, continue without failing the request
+            current_app.logger.debug('Search cache lookup failed; proceeding to fetch')
 
         filter_parts = []
         if filters:

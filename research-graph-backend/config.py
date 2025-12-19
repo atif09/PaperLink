@@ -23,15 +23,31 @@ class DevelopmentConfig(Config):
 class ProductionConfig(Config):
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', '')
-    
+    # Recommended engine options to avoid stale/closed connections on cloud hosts
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_pre_ping': True
+    }
+
     @classmethod
     def init_app(cls, app):
         db_url = cls.SQLALCHEMY_DATABASE_URI
         if not db_url:
-            raise ValueError("DATABASE_URL environment variable must be set in production")
+            raise ValueError(
+                "DATABASE_URL environment variable must be set in production. "
+                "Example: postgresql://user:password@host:5432/dbname"
+            )
+
+        # Some providers return the legacy `postgres://` scheme; SQLAlchemy expects `postgresql://`
         if db_url.startswith('postgres://'):
             db_url = db_url.replace('postgres://', 'postgresql://', 1)
-            app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+
+        # Ensure engine options are applied (e.g. pre-ping to avoid broken connection errors)
+        app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+        app.config.setdefault('SQLALCHEMY_ENGINE_OPTIONS', {})
+        # merge defaults without overwriting any custom settings
+        engine_opts = app.config['SQLALCHEMY_ENGINE_OPTIONS']
+        engine_opts.update(cls.SQLALCHEMY_ENGINE_OPTIONS)
+        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = engine_opts
 
 
 class TestingConfig(Config):
